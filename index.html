@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Pebble's Beach</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Farm"/>
+<meta name="theme-color" content="#2d5a27"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+:root{
+  --green:#2d5a27;--green-dark:#1a3d12;--green-light:#4a7a42;--green-pale:#e8f5e9;
+  --gold:#c9981a;--gold-light:#f0c040;--gold-pale:#fff8e1;
+  --earth:#8b5e3c;--earth-pale:#fdf3e7;
+  --red:#c62828;--red-pale:#ffebee;
+  --blue:#1565c0;--blue-pale:#e3f2fd;
+  --gray-50:#fafafa;--gray-100:#f5f5f5;--gray-200:#eeeeee;--gray-300:#e0e0e0;
+  --gray-400:#bdbdbd;--gray-500:#9e9e9e;--gray-600:#757575;--gray-700:#616161;
+  --gray-800:#424242;--gray-900:#212121;
+  --text:#1a2e1a;--bg:#f4f7f4;--card:#ffffff;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 1px 4px rgba(0,0,0,.1);--shadow-md:0 3px 12px rgba(0,0,0,.12);
+  --font-head:'Playfair Display',Georgia,serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:var(--text);}
+#root{height:100%;display:flex;flex-direction:column;}
+
+/* ── Layout ── */
+.app{display:flex;height:100%;overflow:hidden;}
+.sidebar{width:220px;min-width:220px;background:var(--green-dark);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1);}
+.sidebar-logo h1{font-family:var(--font-head);color:var(--gold-light);font-size:17px;line-height:1.2;}
+.sidebar-logo p{color:rgba(200,230,200,.6);font-size:10px;margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
+.sidebar-user{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;}
+.sidebar-user-icon{width:28px;height:28px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;flex-shrink:0;}
+.sidebar-user-info{flex:1;min-width:0;}
+.sidebar-user-info .name{color:rgba(255,255,255,.9);font-size:12px;font-weight:500;truncate:ellipsis;white-space:nowrap;overflow:hidden;}
+.sidebar-user-info .role{color:rgba(255,255,255,.4);font-size:10px;}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto;}
+.nav-section{padding:6px 12px 2px;color:rgba(255,255,255,.3);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;transition:all .15s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.nav-item.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--gold-light);font-weight:500;}
+.nav-item .icon{font-size:15px;width:20px;text-align:center;}
+.nav-logout{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.main-header{padding:16px 24px;background:var(--card);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.main-header h2{font-family:var(--font-head);font-size:20px;color:var(--green-dark);}
+.main-header p{font-size:12px;color:var(--gray-600);margin-top:2px;}
+.main-content{flex:1;overflow-y:auto;padding:20px 24px;}
+
+/* ── Mobile Bottom Nav ── */
+.bottom-nav{display:none;background:var(--green-dark);padding:0;border-top:1px solid rgba(255,255,255,.1);}
+.bottom-nav-items{display:flex;}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;cursor:pointer;color:rgba(255,255,255,.55);font-size:9px;gap:3px;transition:all .15s;border-top:2px solid transparent;}
+.bottom-nav-item.active{color:var(--gold-light);border-top-color:var(--gold-light);}
+.bottom-nav-item .icon{font-size:18px;}
+
+/* ── Cards ── */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-weight:600;font-size:14px;color:var(--green-dark);}
+.card-body{padding:16px 18px;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:500;transition:all .15s;text-decoration:none;}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-light);}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-gold:hover{background:var(--gold-light);color:var(--green-dark);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:#b71c1c;}
+.btn-ghost{background:transparent;color:var(--green);border:1.5px solid var(--green);}
+.btn-ghost:hover{background:var(--green-pale);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-xs{padding:3px 8px;font-size:11px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* ── Forms ── */
+.form-group{margin-bottom:14px;}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--gray-700);margin-bottom:5px;}
+.form-input{width:100%;padding:8px 11px;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;color:var(--text);background:#fff;transition:border-color .15s;outline:none;}
+.form-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(45,90,39,.1);}
+.form-input:disabled{background:var(--gray-100);color:var(--gray-500);}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+.form-row{display:grid;gap:12px;}
+.form-row-2{grid-template-columns:1fr 1fr;}
+.form-row-3{grid-template-columns:1fr 1fr 1fr;}
+.form-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;}
+.form-check input{width:16px;height:16px;accent-color:var(--green);}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;}
+table.dt{width:100%;border-collapse:collapse;font-size:13px;}
+table.dt th{background:var(--green-dark);color:#fff;padding:9px 10px;text-align:left;font-weight:500;font-size:12px;white-space:nowrap;}
+table.dt td{padding:8px 10px;border-bottom:1px solid var(--gray-100);vertical-align:top;}
+table.dt tr:hover td{background:var(--gray-50);}
+table.dt tr:last-child td{border-bottom:none;}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-green{background:var(--green-pale);color:var(--green-dark);}
+.badge-gold{background:var(--gold-pale);color:#7a5b00;}
+.badge-red{background:var(--red-pale);color:var(--red);}
+.badge-blue{background:var(--blue-pale);color:var(--blue);}
+.badge-gray{background:var(--gray-100);color:var(--gray-600);}
+
+/* ── Alerts ── */
+.alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.alert-success{background:var(--green-pale);color:var(--green-dark);border:1px solid #a5d6a7;}
+.alert-error{background:var(--red-pale);color:var(--red);border:1px solid #ef9a9a;}
+.alert-info{background:var(--blue-pale);color:var(--blue);border:1px solid #90caf9;}
+.alert-warn{background:var(--gold-pale);color:#7a5b00;border:1px solid #ffd54f;}
+
+/* ── Login screen ── */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green-dark) 0%,var(--green) 60%,var(--green-light) 100%);padding:20px;}
+.login-card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.login-card h1{font-family:var(--font-head);color:var(--green-dark);font-size:26px;margin-bottom:4px;}
+.login-card p{color:var(--gray-600);font-size:13px;margin-bottom:28px;}
+.login-logo{font-size:48px;margin-bottom:16px;}
+
+/* ── Spinner ── */
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+.spinner-dark{border-color:rgba(0,0,0,.2);border-top-color:var(--green);}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Week payroll grid ── */
+.week-grid{overflow-x:auto;}
+.week-table{border-collapse:collapse;font-size:12px;min-width:800px;}
+.week-table th{background:var(--green-dark);color:#fff;padding:8px 6px;text-align:center;font-weight:500;white-space:nowrap;}
+.week-table th:first-child{text-align:left;min-width:120px;}
+.week-table td{padding:5px 4px;border-bottom:1px solid var(--gray-100);vertical-align:middle;}
+.week-table tr:hover td{background:var(--gray-50);}
+.week-table .emp-name{font-weight:500;padding:5px 8px;}
+.day-cell{display:flex;flex-direction:column;gap:3px;min-width:110px;}
+.day-cell input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);}
+.day-cell .num-input{width:52px;padding:3px 5px;border:1.5px solid var(--gray-300);border-radius:4px;font-size:11px;text-align:center;}
+.day-cell .num-input:focus{border-color:var(--green);outline:none;}
+.day-cell select{width:100%;padding:3px 5px;border:1.5px solid var(--gray-300);border-radius:4px;font-size:10px;}
+.contract-row td{background:var(--gold-pale);}
+.total-cell{font-weight:700;color:var(--green-dark);text-align:right;padding-right:8px;}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;flex-wrap:wrap;}
+.tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;}
+.tab.active{background:#fff;color:var(--green-dark);box-shadow:var(--shadow);}
+.tab:hover:not(.active){color:var(--green);}
+
+/* ── Summary cards ── */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
+.summary-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+.summary-card .label{font-size:11px;color:var(--gray-600);font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
+.summary-card .value{font-size:22px;font-weight:700;color:var(--green-dark);margin-top:4px;font-family:var(--font-head);}
+.summary-card .sub{font-size:11px;color:var(--gray-500);margin-top:2px;}
+.summary-card.gold .value{color:var(--gold);}
+.summary-card.red .value{color:var(--red);}
+.summary-card.blue .value{color:var(--blue);}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .bottom-nav{display:block;}
+  .main-content{padding:14px 14px 16px;}
+  .main-header{padding:12px 14px;}
+  .form-row-2,.form-row-3{grid-template-columns:1fr;}
+  .week-table{font-size:11px;}
+}
+
+/* ── Misc ── */
+.empty{text-align:center;padding:40px;color:var(--gray-500);font-size:13px;}
+.divider{height:1px;background:var(--gray-200);margin:12px 0;}
+.text-right{text-align:right;}
+.text-center{text-align:center;}
+.flex{display:flex;align-items:center;}
+.flex-between{display:flex;align-items:center;justify-content:space-between;}
+.gap-8{gap:8px;}
+.gap-12{gap:12px;}
+.mt-4{margin-top:4px;}
+.mt-8{margin-top:8px;}
+.mt-12{margin-top:12px;}
+.mt-16{margin-top:16px;}
+.mb-4{margin-bottom:4px;}
+.mb-8{margin-bottom:8px;}
+.mb-12{margin-bottom:12px;}
+.fw-600{font-weight:600;}
+.fs-12{font-size:12px;}
+.fs-11{font-size:11px;}
+.color-green{color:var(--green-dark);}
+.color-red{color:var(--red);}
+.color-gold{color:var(--gold);}
+.color-gray{color:var(--gray-600);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useMemo,useRef} = React;
+const LS_AUTH='farm_auth';
+const LS_DATA='farm_data';
+const LS_URL='farm_url';
+const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbxa87-1zyZSQI0T9M3olkMgTjOOfcw_ACWaHCZxOQP7ghIizVKHMExC66NI7kJxFG0J/exec';  // Paste your GAS URL here
+
+// ── Utilities ─────────────────────────────────────────────
+const fmt = n => '₹' + Number(n||0).toLocaleString('en-IN');
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+function getMondayOf(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+function getWeekDates(monday) {
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    dates.push(d.toISOString().split('T')[0]);
+  }
+  return dates;
+}
+
+function fiscalYear(date) {
+  const d = new Date(date);
+  const month = d.getMonth(); // 0-indexed
+  const year = d.getFullYear();
+  return month >= 3 ? year : year - 1; // April = month 3
+}
+
+function apiGet(url, params) {
+  return new Promise((resolve, reject) => {
+    const cb = '_farm' + Date.now() + Math.random().toString(36).slice(2);
+    const s = document.createElement('script'); let done = false;
+    const clean = () => { if(done)return; done=true; clearTimeout(t); delete window[cb]; s.parentNode&&s.parentNode.removeChild(s); };
+    const t = setTimeout(() => { clean(); reject(new Error('Request timed out')); }, 15000);
+    window[cb] = d => { clean(); d&&d.error ? reject(new Error(d.error)) : resolve(d); };
+    s.onerror = () => { clean(); reject(new Error('Network error')); };
+    const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+    s.src = url + '?' + qs + '&callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+
+// ── Shared Components ─────────────────────────────────────
+function Alert({type='info',msg,onClose}) {
+  if(!msg) return null;
+  const cls = {success:'alert-success',error:'alert-error',info:'alert-info',warn:'alert-warn'}[type]||'alert-info';
+  return <div className={'alert '+cls}><span style={{flex:1}}>{msg}</span>{onClose&&<span style={{cursor:'pointer',opacity:.6}} onClick={onClose}>✕</span>}</div>;
+}
+
+function Spinner({dark}) { return <span className={'spinner'+(dark?' spinner-dark':'')}/>; }
+
+function Modal({title,children,onClose,width=480}) {
+  return <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.45)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{background:'#fff',borderRadius:12,width:'100%',maxWidth:width,maxHeight:'90vh',overflow:'auto',boxShadow:'0 20px 60px rgba(0,0,0,.3)'}}>
+      <div style={{padding:'16px 20px',borderBottom:'1px solid var(--gray-200)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{fontWeight:600,fontSize:15,color:'var(--green-dark)'}}>{title}</div>
+        <button onClick={onClose} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'var(--gray-500)',lineHeight:1}}>✕</button>
+      </div>
+      <div style={{padding:20}}>{children}</div>
+    </div>
+  </div>;
+}
+
+function Confirm({msg,onOk,onCancel}) {
+  return <Modal title="Confirm" onClose={onCancel} width={360}>
+    <p style={{fontSize:14,marginBottom:20}}>{msg}</p>
+    <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+      <button className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+      <button className="btn btn-danger" onClick={onOk}>Confirm</button>
+    </div>
+  </Modal>;
+}
+
+// ── Login Screen ──────────────────────────────────────────
+function LoginScreen({gasUrl,onLogin}) {
+  const [email,setEmail] = useState('');
+  const [pass,setPass] = useState('');
+  const [busy,setBusy] = useState(false);
+  const [err,setErr] = useState('');
+  const [url,setUrl] = useState(gasUrl||DEFAULT_GAS);
+
+  const doLogin = async () => {
+    if(!url) { setErr('Please enter the GAS URL'); return; }
+    if(!email||!pass) { setErr('Enter email and password'); return; }
+    setBusy(true); setErr('');
+    try {
+      const r = await apiGet(url, {action:'login',email,password:pass});
+      if(r.ok) {
+        localStorage.setItem(LS_AUTH, JSON.stringify({email,password:pass}));
+        localStorage.setItem(LS_URL, url);
+        onLogin(r.user, email, pass, url);
+      } else { setErr(r.error||'Login failed'); }
+    } catch(e) { setErr(e.message); }
+    setBusy(false);
+  };
+
+  return <div className="login-screen">
+    <div className="login-card">
+      <div className="login-logo">🌿</div>
+      <h1>Pebble's Beach</h1>
+      <p>Estate Management System — Sign in to continue</p>
+      <Alert type="error" msg={err} onClose={()=>setErr('')}/>
+      {!DEFAULT_GAS && <div className="form-group">
+        <label className="form-label">GAS URL</label>
+        <input className="form-input" placeholder="https://script.google.com/..." value={url} onChange={e=>setUrl(e.target.value)}/>
+      </div>}
+      <div className="form-group">
+        <label className="form-label">Email</label>
+        <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&doLogin()}/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Password</label>
+        <input className="form-input" type="password" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&doLogin()}/>
+      </div>
+      <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px'}} onClick={doLogin} disabled={busy}>
+        {busy ? <><Spinner/> Signing in…</> : 'Sign In'}
+      </button>
+    </div>
+  </div>;
+}
+
+// ── Admin Tab ─────────────────────────────────────────────
+function AdminTab({data,gasUrl,auth,onRefresh}) {
+  const [tab,setTab] = useState('employees');
+  const [busy,setBusy] = useState(false);
+  const [msg,setMsg] = useState(null);
+  const N = (t,tp='success') => { setMsg({t,tp}); setTimeout(()=>setMsg(null),3500); };
+
+  const call = useCallback(async(action,payload={},extra={}) => {
+    setBusy(true);
+    try {
+      const r = await apiGet(gasUrl,{action,...auth,...(Object.keys(payload).length?{payload:JSON.stringify(payload)}:{}),...extra});
+      if(r.ok!==false&&!r.error) { await onRefresh(); return r; }
+      else throw new Error(r.error||'Error');
+    } catch(e) { N(e.message,'error'); }
+    finally { setBusy(false); }
+  },[gasUrl,auth]);
+
+  return <div>
+    <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
+    <div className="tabs">
+      {[['employees','👤 Employees'],['contract','🏗️ Contract Rates'],['workTypes','⛏️ Work Types'],['expenseTypes','📋 Expense Types'],['users','🔐 Users']].map(([id,label])=>
+        <div key={id} className={'tab'+(tab===id?' active':'')} onClick={()=>setTab(id)}>{label}</div>
+      )}
+    </div>
+    {tab==='employees'&&<EmployeesTab data={data} call={call} busy={busy}/>}
+    {tab==='contract'&&<ContractRatesTab data={data} call={call} busy={busy}/>}
+    {tab==='workTypes'&&<WorkTypesTab data={data} call={call} busy={busy}/>}
+    {tab==='expenseTypes'&&<ExpenseTypesTab data={data} call={call} busy={busy}/>}
+    {tab==='users'&&<UsersTab data={data} call={call} busy={busy} auth={auth}/>}
+  </div>;
+}
+
+function EmployeesTab({data,call,busy}) {
+  const [form,setForm] = useState({name:'',dailyWage:'',otRate:''});
+  const [editing,setEditing] = useState(null);
+  const [confirm,setConfirm] = useState(null);
+  const emps = data.employees||[];
+
+  const reset = () => { setForm({name:'',dailyWage:'',otRate:''}); setEditing(null); };
+  const save = async() => {
+    if(!form.name||!form.dailyWage) return;
+    await call(editing?'saveEmployee':'saveEmployee', editing?{...form,id:editing}:{...form});
+    reset();
+  };
+
+  return <div>
+    <div className="card">
+      <div className="card-header"><div className="card-title">{editing?'Edit Employee':'Add Employee'}</div></div>
+      <div className="card-body">
+        <div className="form-row form-row-3">
+          <div className="form-group mb-0"><label className="form-label">Name</label><input className="form-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Employee name"/></div>
+          <div className="form-group mb-0"><label className="form-label">Daily Wage (₹)</label><input className="form-input" type="number" value={form.dailyWage} onChange={e=>setForm(f=>({...f,dailyWage:e.target.value}))} placeholder="500"/></div>
+          <div className="form-group mb-0"><label className="form-label">OT Rate/hr (₹)</label><input className="form-input" type="number" value={form.otRate} onChange={e=>setForm(f=>({...f,otRate:e.target.value}))} placeholder="80"/></div>
+        </div>
+        <div style={{display:'flex',gap:8,marginTop:12}}>
+          <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.name||!form.dailyWage}>{busy?<Spinner/>:null}{editing?'Update':'Add Employee'}</button>
+          {editing&&<button className="btn btn-ghost btn-sm" onClick={reset}>Cancel</button>}
+        </div>
+      </div>
+    </div>
+    <div className="card">
+      <div className="card-body" style={{padding:0}}>
+        {emps.length===0?<div className="empty">No employees yet</div>:<div className="table-wrap">
+          <table className="dt">
+            <thead><tr><th>Name</th><th>Daily Wage</th><th>OT Rate/hr</th><th></th></tr></thead>
+            <tbody>{emps.map(e=><tr key={e.id}>
+              <td className="fw-600">{e.name}</td>
+              <td>{fmt(e.dailyWage)}</td>
+              <td>{fmt(e.otRate)}/hr</td>
+              <td style={{textAlign:'right',whiteSpace:'nowrap'}}>
+                <button className="btn btn-ghost btn-xs" onClick={()=>{setEditing(e.id);setForm({name:e.name,dailyWage:e.dailyWage,otRate:e.otRate});}}>Edit</button>
+                {' '}<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(e.id)}>Del</button>
+              </td>
+            </tr>)}</tbody>
+          </table>
+        </div>}
+      </div>
+    </div>
+    {confirm&&<Confirm msg="Delete this employee?" onOk={async()=>{setConfirm(null);await call('deleteEmployee',{},{id:confirm});}} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+function ContractRatesTab({data,call,busy}) {
+  const cfg = data.config||{};
+  const [maleWage,setMaleWage] = useState(cfg.contractMaleWage||'');
+  const [femaleWage,setFemaleWage] = useState(cfg.contractFemaleWage||'');
+  useEffect(()=>{setMaleWage(cfg.contractMaleWage||'');setFemaleWage(cfg.contractFemaleWage||'');},[cfg.contractMaleWage,cfg.contractFemaleWage]);
+  const save = async() => { await call('saveConfig',{contractMaleWage:maleWage,contractFemaleWage:femaleWage}); };
+  return <div className="card"><div className="card-header"><div className="card-title">Contract Labour Daily Rates</div></div>
+    <div className="card-body">
+      <div className="form-row form-row-2">
+        <div className="form-group"><label className="form-label">Male Daily Wage (₹)</label><input className="form-input" type="number" value={maleWage} onChange={e=>setMaleWage(e.target.value)}/></div>
+        <div className="form-group"><label className="form-label">Female Daily Wage (₹)</label><input className="form-input" type="number" value={femaleWage} onChange={e=>setFemaleWage(e.target.value)}/></div>
+      </div>
+      <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy?<Spinner/>:null}Save Rates</button>
+    </div>
+  </div>;
+}
+
+function WorkTypesTab({data,call,busy}) {
+  const [form,setForm] = useState({name:'',parent:''});
+  const [confirm,setConfirm] = useState(null);
+  const wts = data.workTypes||[];
+  const estateTypes = wts.filter(w=>w.parent==='Estate');
+  const pbh = wts.find(w=>!w.parent||w.parent==='');
+  const save = async() => {
+    if(!form.name) return;
+    await call('saveWorkType',form);
+    setForm({name:'',parent:''});
+  };
+  return <div>
+    <div className="card"><div className="card-header"><div className="card-title">Add Estate Sub-type</div></div>
+      <div className="card-body">
+        <div className="form-row form-row-2">
+          <div className="form-group mb-0"><label className="form-label">Sub-type Name</label><input className="form-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Harvesting"/></div>
+          <div className="form-group mb-0"><label className="form-label">Category</label>
+            <select className="form-input form-select" value={form.parent} onChange={e=>setForm(f=>({...f,parent:e.target.value}))}>
+              <option value="">PBH (top level)</option><option value="Estate">Estate Sub-type</option>
+            </select>
+          </div>
+        </div>
+        <button className="btn btn-primary btn-sm mt-12" onClick={save} disabled={busy||!form.name}>{busy?<Spinner/>:null}Add</button>
+      </div>
+    </div>
+    <div className="card"><div className="card-header"><div className="card-title">Estate Sub-types</div></div>
+      <div className="card-body" style={{padding:0}}>
+        <div className="table-wrap"><table className="dt"><thead><tr><th>Name</th><th></th></tr></thead>
+          <tbody>{estateTypes.map(w=><tr key={w.id}><td>{w.name}</td>
+            <td style={{textAlign:'right'}}><button className="btn btn-danger btn-xs" onClick={()=>setConfirm(w.id)}>Del</button></td>
+          </tr>)}</tbody>
+        </table></div>
+      </div>
+    </div>
+    {confirm&&<Confirm msg="Delete this work type?" onOk={async()=>{setConfirm(null);await call('deleteWorkType',{},{id:confirm});}} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+function ExpenseTypesTab({data,call,busy}) {
+  const [name,setName] = useState('');
+  const [confirm,setConfirm] = useState(null);
+  const types = data.expenseTypes||[];
+  const save = async() => { if(!name) return; await call('saveExpenseType',{name}); setName(''); };
+  return <div>
+    <div className="card"><div className="card-header"><div className="card-title">Add Expense Type</div></div>
+      <div className="card-body" style={{display:'flex',gap:8,alignItems:'flex-end'}}>
+        <div className="form-group mb-0" style={{flex:1}}><label className="form-label">Type Name</label><input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Vehicle Hire"/></div>
+        <button className="btn btn-primary btn-sm" style={{marginBottom:0}} onClick={save} disabled={busy||!name}>{busy?<Spinner/>:null}Add</button>
+      </div>
+    </div>
+    <div className="card"><div className="card-body" style={{padding:0}}>
+      <div className="table-wrap"><table className="dt"><thead><tr><th>Expense Type</th><th></th></tr></thead>
+        <tbody>{types.map(t=><tr key={t.id}><td>{t.name}</td>
+          <td style={{textAlign:'right'}}><button className="btn btn-danger btn-xs" onClick={()=>setConfirm(t.id)}>Del</button></td>
+        </tr>)}</tbody>
+      </table></div>
+    </div></div>
+    {confirm&&<Confirm msg="Delete this expense type?" onOk={async()=>{setConfirm(null);await call('deleteExpenseType',{},{id:confirm});}} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+function UsersTab({data,call,busy,auth}) {
+  const [form,setForm] = useState({email:'',name:'',password:'',isAdmin:false});
+  const [confirm,setConfirm] = useState(null);
+  const users = data.users||[];
+  const save = async() => {
+    if(!form.email||!form.name||!form.password) return;
+    await call('saveUser',{...form,isAdmin:form.isAdmin});
+    setForm({email:'',name:'',password:'',isAdmin:false});
+  };
+  return <div>
+    <div className="card"><div className="card-header"><div className="card-title">Add / Update User</div></div>
+      <div className="card-body">
+        <div className="form-row form-row-2">
+          <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/></div>
+          <div className="form-group"><label className="form-label">Name</label><input className="form-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/></div>
+          <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/></div>
+          <div className="form-group" style={{display:'flex',alignItems:'flex-end',paddingBottom:4}}>
+            <label className="form-check"><input type="checkbox" checked={form.isAdmin} onChange={e=>setForm(f=>({...f,isAdmin:e.target.checked}))}/> Admin user</label>
+          </div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.email||!form.name||!form.password}>{busy?<Spinner/>:null}Save User</button>
+      </div>
+    </div>
+    <div className="card"><div className="card-body" style={{padding:0}}>
+      <div className="table-wrap"><table className="dt"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th></th></tr></thead>
+        <tbody>{users.map(u=><tr key={u.email}>
+          <td>{u.email}</td><td>{u.name}</td>
+          <td>{u.isAdmin===true||String(u.isAdmin).toUpperCase()==='TRUE'?<span className="badge badge-gold">Admin</span>:<span className="badge badge-gray">User</span>}</td>
+          <td style={{textAlign:'right'}}>{u.email!==auth.email&&u.email!=='jawadayaz@gmail.com'&&<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(u.email)}>Del</button>}</td>
+        </tr>)}</tbody>
+      </table></div>
+    </div></div>
+    {confirm&&<Confirm msg="Delete this user?" onOk={async()=>{setConfirm(null);await call('deleteUser',{},{targetEmail:confirm});}} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+// ── Wages Tab ─────────────────────────────────────────────
+function WagesTab({data,gasUrl,auth,onRefresh}) {
+  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
+  const [busy,setBusy] = useState(false);
+  const [msg,setMsg] = useState(null);
+  const N = (t,tp='success') => { setMsg({t,tp}); setTimeout(()=>setMsg(null),4000); };
+
+  const employees = data.employees||[];
+  const workTypes = data.workTypes||[];
+  const config = data.config||{};
+  const weekDates = getWeekDates(weekStart);
+
+  // Find existing payroll for this week
+  const existingPayroll = (data.payroll||[]).find(p=>p.weekStart===weekStart);
+  const isPending = existingPayroll?.status==='pending';
+  const isPaid = existingPayroll?.status==='paid';
+
+  // Build initial entries state
+  const emptyEntry = () => ({worked:false,otHours:'',workType:'',workSubType:''});
+  const emptyDay = () => ({
+    employees: Object.fromEntries(employees.map(e=>[e.id,emptyEntry()])),
+    contractMale:0, contractFemale:0,
+    contractMaleWork:'', contractFemaleWork:''
+  });
+
+  const [entries,setEntries] = useState(() => {
+    if(existingPayroll?.data) return existingPayroll.data.days || weekDates.map(()=>emptyDay());
+    return weekDates.map(()=>emptyDay());
+  });
+
+  // Reload when week changes or payroll data changes
+  useEffect(()=>{
+    if(existingPayroll?.data?.days) { setEntries(existingPayroll.data.days); }
+    else { setEntries(weekDates.map(()=>emptyDay())); }
+  },[weekStart, existingPayroll?.weekStart]);
+
+  const estateSubTypes = workTypes.filter(w=>w.parent==='Estate').map(w=>w.name);
+  const isPBH = workTypes.find(w=>!w.parent||w.parent==='');
+
+  const setEmpField = (dayIdx,empId,field,val) => {
+    setEntries(prev => prev.map((day,i) => i!==dayIdx?day:{...day,
+      employees:{...day.employees,[empId]:{...day.employees[empId],[field]:val}}}));
+  };
+
+  const setDayField = (dayIdx,field,val) => {
+    setEntries(prev => prev.map((day,i) => i!==dayIdx?day:{...day,[field]:val}));
+  };
+
+  // Calculate totals
+  const totals = useMemo(()=>{
+    const empTotals = {};
+    employees.forEach(e=>{
+      let days=0, otHours=0;
+      entries.forEach(day=>{
+        const ed = day.employees?.[e.id];
+        if(ed?.worked) { days++; otHours+=parseFloat(ed.otHours||0); }
+      });
+      const amount = days*parseFloat(e.dailyWage||0) + otHours*parseFloat(e.otRate||0);
+      empTotals[e.id] = {days,otHours,amount};
+    });
+    const mDays = entries.reduce((s,d)=>s+parseFloat(d.contractMale||0),0);
+    const fDays = entries.reduce((s,d)=>s+parseFloat(d.contractFemale||0),0);
+    const mAmount = mDays*parseFloat(config.contractMaleWage||0);
+    const fAmount = fDays*parseFloat(config.contractFemaleWage||0);
+    const totalWages = Object.values(empTotals).reduce((s,e)=>s+e.amount,0)+mAmount+fAmount;
+    return {empTotals,contractMale:{days:mDays,amount:mAmount},contractFemale:{days:fDays,amount:fAmount},totalWages};
+  },[entries,employees,config]);
+
+  const buildPayload = () => ({
+    weekStart,
+    data:{
+      days:entries,
+      employees:employees.map(e=>({id:e.id,name:e.name,...totals.empTotals[e.id]})),
+      contractMale:totals.contractMale, contractFemale:totals.contractFemale,
+    },
+    totalWages:totals.totalWages,
+    totalOther:0,
+  });
+
+  const save = async() => {
+    setBusy(true);
+    try {
+      const r = await apiGet(gasUrl,{action:'savePayroll',...auth,payload:JSON.stringify(buildPayload())});
+      if(r.ok) { await onRefresh(); N('Payroll saved!'); }
+      else throw new Error(r.error);
+    } catch(e) { N(e.message,'error'); }
+    setBusy(false);
+  };
+
+  return <div>
+    <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
+    {isPending&&<Alert type="warn" msg="A payment request has been submitted for this week. Editing is locked until payment is confirmed."/>}
+    {isPaid&&<Alert type="success" msg="This week's payroll has been paid."/>}
+
+    <div className="card">
+      <div className="card-header">
+        <div>
+          <div className="card-title">Weekly Payroll</div>
+          <div style={{fontSize:11,color:'var(--gray-500)',marginTop:2}}>Week starting Monday</div>
+        </div>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <input type="date" className="form-input" style={{width:'auto',fontSize:13}}
+            value={weekStart}
+            onChange={e=>{ const d=new Date(e.target.value); if(d.getDay()===1)setWeekStart(e.target.value); else setWeekStart(getMondayOf(e.target.value)); }}
+          />
+          {!isPending&&!isPaid&&<button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy?<Spinner/>:null}Save</button>}
+        </div>
+      </div>
+      <div className="card-body" style={{padding:'12px 0 0'}}>
+        <div className="week-grid">
+          <table className="week-table" style={{width:'100%'}}>
+            <thead>
+              <tr>
+                <th style={{textAlign:'left',paddingLeft:12}}>Employee</th>
+                {weekDates.map((d,i)=><th key={d}>{DAYS[i]}<br/><span style={{fontSize:9,fontWeight:400}}>{d.slice(5)}</span></th>)}
+                <th>Days</th><th>OT Hrs</th><th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map(emp=>(
+                <tr key={emp.id}>
+                  <td className="emp-name">{emp.name}<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(emp.dailyWage)}/day · {fmt(emp.otRate)}/hr OT</span></td>
+                  {entries.map((day,di)=>{
+                    const ed = day.employees?.[emp.id]||emptyEntry();
+                    return <td key={di}>
+                      <div className="day-cell">
+                        <label className="form-check" style={{justifyContent:'center'}}>
+                          <input type="checkbox" disabled={isPending||isPaid} checked={!!ed.worked} onChange={e=>setEmpField(di,emp.id,'worked',e.target.checked)}/>
+                          <span style={{fontSize:10}}>Worked</span>
+                        </label>
+                        {ed.worked&&<>
+                          <input className="num-input" type="number" min="0" step="0.5" placeholder="OT hrs" disabled={isPending||isPaid}
+                            value={ed.otHours} onChange={e=>setEmpField(di,emp.id,'otHours',e.target.value)}/>
+                          <select className="num-input" style={{width:'100%'}} disabled={isPending||isPaid}
+                            value={ed.workType} onChange={e=>setEmpField(di,emp.id,'workType',e.target.value)}>
+                            <option value="">Work type</option>
+                            <option value="PBH">PBH</option>
+                            <option value="Estate">Estate</option>
+                          </select>
+                          {ed.workType==='Estate'&&<select className="num-input" style={{width:'100%'}} disabled={isPending||isPaid}
+                            value={ed.workSubType} onChange={e=>setEmpField(di,emp.id,'workSubType',e.target.value)}>
+                            <option value="">Sub-type</option>
+                            {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
+                            <option value="Other">Other</option>
+                          </select>}
+                        </>}
+                      </div>
+                    </td>;
+                  })}
+                  <td className="total-cell">{totals.empTotals[emp.id]?.days||0}</td>
+                  <td className="total-cell">{totals.empTotals[emp.id]?.otHours||0}</td>
+                  <td className="total-cell" style={{color:'var(--green-dark)'}}>{fmt(totals.empTotals[emp.id]?.amount||0)}</td>
+                </tr>
+              ))}
+
+              {/* Contract Male */}
+              <tr className="contract-row">
+                <td className="emp-name">Contract Male<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractMaleWage)}/day</span></td>
+                {entries.map((day,di)=><td key={di}>
+                  <div className="day-cell">
+                    <input className="num-input" type="number" min="0" placeholder="Workers" disabled={isPending||isPaid}
+                      value={day.contractMale||''} onChange={e=>setDayField(di,'contractMale',e.target.value)}/>
+                    <select className="num-input" style={{width:'100%'}} disabled={isPending||isPaid}
+                      value={day.contractMaleWork||''} onChange={e=>setDayField(di,'contractMaleWork',e.target.value)}>
+                      <option value="">Work</option>
+                      <option value="PBH">PBH</option>
+                      <option value="Estate">Estate</option>
+                    </select>
+                  </div>
+                </td>)}
+                <td className="total-cell">{totals.contractMale.days}</td>
+                <td className="total-cell">—</td>
+                <td className="total-cell">{fmt(totals.contractMale.amount)}</td>
+              </tr>
+
+              {/* Contract Female */}
+              <tr className="contract-row">
+                <td className="emp-name">Contract Female<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractFemaleWage)}/day</span></td>
+                {entries.map((day,di)=><td key={di}>
+                  <div className="day-cell">
+                    <input className="num-input" type="number" min="0" placeholder="Workers" disabled={isPending||isPaid}
+                      value={day.contractFemale||''} onChange={e=>setDayField(di,'contractFemale',e.target.value)}/>
+                    <select className="num-input" style={{width:'100%'}} disabled={isPending||isPaid}
+                      value={day.contractFemaleWork||''} onChange={e=>setDayField(di,'contractFemaleWork',e.target.value)}>
+                      <option value="">Work</option>
+                      <option value="PBH">PBH</option>
+                      <option value="Estate">Estate</option>
+                    </select>
+                  </div>
+                </td>)}
+                <td className="total-cell">{totals.contractFemale.days}</td>
+                <td className="total-cell">—</td>
+                <td className="total-cell">{fmt(totals.contractFemale.amount)}</td>
+              </tr>
+
+              {/* Grand total row */}
+              <tr style={{background:'var(--green-pale)'}}>
+                <td colSpan={weekDates.length+1} className="emp-name fw-600" style={{textAlign:'right',paddingRight:12,color:'var(--green-dark)'}}>Total Wages</td>
+                <td className="total-cell" colSpan={2}></td>
+                <td className="total-cell" style={{fontSize:15}}>{fmt(totals.totalWages)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ── Other Expenses Tab ────────────────────────────────────
+function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
+  const [form,setForm] = useState({type:'',amount:'',note:'',date:new Date().toISOString().split('T')[0]});
+  const [busy,setBusy] = useState(false);
+  const [msg,setMsg] = useState(null);
+  const [confirm,setConfirm] = useState(null);
+  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),3500);};
+  const expenseTypes = data.expenseTypes||[];
+  const expenses = data.otherExpenses||[];
+
+  const save = async() => {
+    if(!form.type||!form.amount) return;
+    setBusy(true);
+    try {
+      const r = await apiGet(gasUrl,{action:'saveOtherExpense',...auth,payload:JSON.stringify({...form,weekStart:getMondayOf(form.date)})});
+      if(r.ok) { await onRefresh(); N('Expense saved!'); setForm(f=>({...f,type:'',amount:'',note:''})); }
+      else throw new Error(r.error);
+    } catch(e) { N(e.message,'error'); }
+    setBusy(false);
+  };
+
+  const del = async(id) => {
+    setBusy(true);
+    try {
+      const r = await apiGet(gasUrl,{action:'deleteOtherExpense',...auth,id});
+      if(r.ok) { await onRefresh(); N('Deleted'); }
+      else throw new Error(r.error);
+    } catch(e) { N(e.message,'error'); }
+    setBusy(false); setConfirm(null);
+  };
+
+  return <div>
+    <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
+    <div className="card">
+      <div className="card-header"><div className="card-title">Add Expense</div></div>
+      <div className="card-body">
+        <div className="form-row form-row-2">
+          <div className="form-group"><label className="form-label">Date</label><input type="date" className="form-input" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></div>
+          <div className="form-group"><label className="form-label">Type</label>
+            <select className="form-input form-select" value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>
+              <option value="">Select type</option>
+              {expenseTypes.map(t=><option key={t.id} value={t.name}>{t.name}</option>)}
+            </select>
+          </div>
+          <div className="form-group"><label className="form-label">Amount (₹)</label><input type="number" className="form-input" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))}/></div>
+          <div className="form-group"><label className="form-label">Note (optional)</label><input className="form-input" value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} placeholder="Details…"/></div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.type||!form.amount}>{busy?<Spinner/>:null}Add Expense</button>
+      </div>
+    </div>
+    <div className="card"><div className="card-body" style={{padding:0}}>
+      {expenses.length===0?<div className="empty">No expenses yet</div>:
+      <div className="table-wrap"><table className="dt">
+        <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th><th></th></tr></thead>
+        <tbody>{[...expenses].sort((a,b)=>b.date>a.date?1:-1).map(e=><tr key={e.id}>
+          <td style={{whiteSpace:'nowrap'}}>{fmtDate(e.date)}</td>
+          <td>{e.type}</td><td style={{color:'var(--gray-600)',fontSize:12}}>{e.note}</td>
+          <td style={{textAlign:'right',fontWeight:600}}>{fmt(e.amount)}</td>
+          <td><button className="btn btn-danger btn-xs" onClick={()=>setConfirm(e.id)}>Del</button></td>
+        </tr>)}</tbody>
+      </table></div>}
+    </div></div>
+    {confirm&&<Confirm msg="Delete this expense?" onOk={()=>del(confirm)} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+// ── Payment Request Tab ───────────────────────────────────
+function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
+  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
+  const [busy,setBusy] = useState(false);
+  const [msg,setMsg] = useState(null);
+  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),4000);};
+
+  const employees = data.employees||[];
+  const config = data.config||{};
+  const payroll = (data.payroll||[]).find(p=>p.weekStart===weekStart);
+  const otherExpenses = (data.otherExpenses||[]).filter(e=>e.weekStart===weekStart);
+
+  const wageData = useMemo(()=>{
+    if(!payroll?.data) return null;
+    return payroll.data;
+  },[payroll]);
+
+  const totalWages = parseFloat(payroll?.totalWages||0);
+  const totalOther = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  const grandTotal = totalWages + totalOther;
+
+  const submit = async() => {
+    if(!payroll) { N('No payroll saved for this week yet','error'); return; }
+    if(payroll.status==='pending') { N('Payment request already submitted','warn'); return; }
+    setBusy(true);
+    try {
+      const payload = {
+        weekStart,
+        data:{...wageData, otherExpenses:otherExpenses.map(e=>({type:e.type,amount:e.amount,note:e.note}))},
+        totalWages,
+        totalOther,
+      };
+      const r = await apiGet(gasUrl,{action:'submitPaymentRequest',...auth,payload:JSON.stringify(payload)});
+      if(r.ok) { await onRefresh(); N('Payment request sent! Email dispatched.'); }
+      else throw new Error(r.error);
+    } catch(e) { N(e.message,'error'); }
+    setBusy(false);
+  };
+
+  const status = payroll?.status;
+
+  return <div>
+    <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
+    <div className="flex-between mb-12">
+      <div><h3 style={{fontSize:14,fontWeight:600,color:'var(--green-dark)'}}>Select Week</h3></div>
+      <input type="date" className="form-input" style={{width:'auto'}} value={weekStart}
+        onChange={e=>setWeekStart(getMondayOf(e.target.value))}/>
+    </div>
+
+    {status==='pending'&&<Alert type="warn" msg="⏳ Payment request pending — awaiting confirmation from Jawad/Chhaya."/>}
+    {status==='paid'&&<Alert type="success" msg="✅ Payment confirmed and recorded."/>}
+
+    <div className="summary-grid">
+      <div className="summary-card">
+        <div className="label">Total Wages</div>
+        <div className="value">{fmt(totalWages)}</div>
+        <div className="sub">Named + Contract labour</div>
+      </div>
+      <div className="summary-card gold">
+        <div className="label">Other Expenses</div>
+        <div className="value">{fmt(totalOther)}</div>
+        <div className="sub">{otherExpenses.length} items</div>
+      </div>
+      <div className="summary-card" style={{background:'var(--green-dark)'}}>
+        <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Grand Total</div>
+        <div className="value" style={{color:'var(--gold-light)'}}>{fmt(grandTotal)}</div>
+        <div className="sub" style={{color:'rgba(255,255,255,.4)'}}>Due this week</div>
+      </div>
+    </div>
+
+    {/* Wages breakdown */}
+    {wageData&&<div className="card">
+      <div className="card-header"><div className="card-title">Wage Breakdown</div></div>
+      <div className="card-body" style={{padding:0}}>
+        <div className="table-wrap"><table className="dt">
+          <thead><tr><th>Employee</th><th style={{textAlign:'center'}}>Days</th><th style={{textAlign:'center'}}>OT Hrs</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
+          <tbody>
+            {(wageData.employees||[]).filter(e=>e.days>0||e.otHours>0).map(e=><tr key={e.id}>
+              <td className="fw-600">{e.name}</td>
+              <td style={{textAlign:'center'}}>{e.days}</td>
+              <td style={{textAlign:'center'}}>{e.otHours||0}</td>
+              <td style={{textAlign:'right'}}>{fmt(e.amount)}</td>
+            </tr>)}
+            {wageData.contractMale?.days>0&&<tr><td>Contract Male</td><td style={{textAlign:'center'}}>{wageData.contractMale.days}</td><td style={{textAlign:'center'}}>—</td><td style={{textAlign:'right'}}>{fmt(wageData.contractMale.amount)}</td></tr>}
+            {wageData.contractFemale?.days>0&&<tr><td>Contract Female</td><td style={{textAlign:'center'}}>{wageData.contractFemale.days}</td><td style={{textAlign:'center'}}>—</td><td style={{textAlign:'right'}}>{fmt(wageData.contractFemale.amount)}</td></tr>}
+            <tr style={{background:'var(--green-pale)'}}><td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td><td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>}
+
+    {/* Other expenses breakdown */}
+    {otherExpenses.length>0&&<div className="card">
+      <div className="card-header"><div className="card-title">Other Expenses</div></div>
+      <div className="card-body" style={{padding:0}}>
+        <div className="table-wrap"><table className="dt">
+          <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
+          <tbody>
+            {otherExpenses.map(e=><tr key={e.id}><td>{fmtDate(e.date)}</td><td>{e.type}</td><td style={{fontSize:12,color:'var(--gray-600)'}}>{e.note}</td><td style={{textAlign:'right'}}>{fmt(e.amount)}</td></tr>)}
+            <tr style={{background:'var(--green-pale)'}}><td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Other</td><td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalOther)}</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>}
+
+    {status!=='paid'&&status!=='pending'&&<button className="btn btn-gold" onClick={submit} disabled={busy||!payroll} style={{width:'100%',justifyContent:'center',padding:12}}>
+      {busy?<Spinner/>:null}📧 Submit Payment Request
+    </button>}
+  </div>;
+}
+
+// ── Expenses Main Tab ─────────────────────────────────────
+function ExpensesTab({data,gasUrl,auth,onRefresh}) {
+  const [tab,setTab] = useState('wages');
+  return <div>
+    <div className="tabs">
+      {[['wages','💰 Wages'],['other','📋 Other Expenses'],['request','📧 Payment Request']].map(([id,label])=>
+        <div key={id} className={'tab'+(tab===id?' active':'')} onClick={()=>setTab(id)}>{label}</div>
+      )}
+    </div>
+    {tab==='wages'&&<WagesTab data={data} gasUrl={gasUrl} auth={auth} onRefresh={onRefresh}/>}
+    {tab==='other'&&<OtherExpensesTab data={data} gasUrl={gasUrl} auth={auth} onRefresh={onRefresh}/>}
+    {tab==='request'&&<PaymentRequestTab data={data} gasUrl={gasUrl} auth={auth} onRefresh={onRefresh}/>}
+  </div>;
+}
+
+// ── Income Tab ────────────────────────────────────────────
+function IncomeTab({data,gasUrl,auth,onRefresh}) {
+  const [form,setForm] = useState({type:'Coffee',amount:'',note:'',date:new Date().toISOString().split('T')[0]});
+  const [busy,setBusy] = useState(false);
+  const [msg,setMsg] = useState(null);
+  const [confirm,setConfirm] = useState(null);
+  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),3500);};
+  const incomes = data.income||[];
+  const TYPES = ['Coffee','Pepper','Timber','Other'];
+
+  const save = async() => {
+    if(!form.amount) return;
+    setBusy(true);
+    try {
+      const r = await apiGet(gasUrl,{action:'saveIncome',...auth,payload:JSON.stringify(form)});
+      if(r.ok) { await onRefresh(); N('Income saved!'); setForm(f=>({...f,amount:'',note:''})); }
+      else throw new Error(r.error);
+    } catch(e) { N(e.message,'error'); }
+    setBusy(false);
+  };
+
+  const del = async(id) => {
+    setBusy(true);
+    try {
+      const r = await apiGet(gasUrl,{action:'deleteIncome',...auth,id});
+      if(r.ok) { await onRefresh(); N('Deleted'); }
+    } catch(e) { N(e.message,'error'); }
+    setBusy(false); setConfirm(null);
+  };
+
+  const totalIncome = incomes.reduce((s,i)=>s+parseFloat(i.amount||0),0);
+
+  return <div>
+    <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
+    <div className="card">
+      <div className="card-header"><div className="card-title">Record Income</div></div>
+      <div className="card-body">
+        <div className="form-row form-row-2">
+          <div className="form-group"><label className="form-label">Date</label><input type="date" className="form-input" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></div>
+          <div className="form-group"><label className="form-label">Type</label>
+            <select className="form-input form-select" value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>
+              {TYPES.map(t=><option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="form-group"><label className="form-label">Amount (₹)</label><input type="number" className="form-input" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))}/></div>
+          <div className="form-group"><label className="form-label">Note (optional)</label><input className="form-input" value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} placeholder="Buyer, weight, etc."/></div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.amount}>{busy?<Spinner/>:null}Record Income</button>
+      </div>
+    </div>
+
+    <div className="summary-grid">
+      {TYPES.map(t=>{
+        const total = incomes.filter(i=>i.type===t).reduce((s,i)=>s+parseFloat(i.amount||0),0);
+        return <div key={t} className="summary-card"><div className="label">{t}</div><div className="value" style={{fontSize:18}}>{fmt(total)}</div></div>;
+      })}
+      <div className="summary-card" style={{background:'var(--green-dark)'}}>
+        <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Total Income</div>
+        <div className="value" style={{color:'var(--gold-light)',fontSize:20}}>{fmt(totalIncome)}</div>
+      </div>
+    </div>
+
+    <div className="card"><div className="card-body" style={{padding:0}}>
+      {incomes.length===0?<div className="empty">No income recorded yet</div>:
+      <div className="table-wrap"><table className="dt">
+        <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th><th></th></tr></thead>
+        <tbody>{[...incomes].sort((a,b)=>b.date>a.date?1:-1).map(i=><tr key={i.id}>
+          <td style={{whiteSpace:'nowrap'}}>{fmtDate(i.date)}</td>
+          <td><span className={'badge '+(i.type==='Coffee'?'badge-green':i.type==='Pepper'?'badge-gold':i.type==='Timber'?'badge-blue':'badge-gray')}>{i.type}</span></td>
+          <td style={{fontSize:12,color:'var(--gray-600)'}}>{i.note}</td>
+          <td style={{textAlign:'right',fontWeight:600,color:'var(--green-dark)'}}>{fmt(i.amount)}</td>
+          <td><button className="btn btn-danger btn-xs" onClick={()=>setConfirm(i.id)}>Del</button></td>
+        </tr>)}</tbody>
+      </table></div>}
+    </div></div>
+    {confirm&&<Confirm msg="Delete this income entry?" onOk={()=>del(confirm)} onCancel={()=>setConfirm(null)}/>}
+  </div>;
+}
+
+// ── Reports Tab ───────────────────────────────────────────
+function ReportsTab({data}) {
+  const [tab,setTab] = useState('weekly');
+  const [selWeek,setSelWeek] = useState(getMondayOf(new Date()));
+  const [selMonth,setSelMonth] = useState(new Date().toISOString().slice(0,7));
+  const [selYear,setSelYear] = useState(fiscalYear(new Date()).toString());
+
+  const payroll = data.payroll||[];
+  const otherExpenses = data.otherExpenses||[];
+  const income = data.income||[];
+
+  // Weekly report
+  const weeklyPaid = payroll.filter(p=>p.status==='paid');
+
+  // Monthly P&L
+  const monthlyPnL = useMemo(()=>{
+    const [yr,mo] = selMonth.split('-').map(Number);
+    const wagesTotal = weeklyPaid
+      .filter(p=>{ const d=new Date(p.weekStart); return d.getFullYear()===yr&&d.getMonth()===mo-1; })
+      .reduce((s,p)=>s+parseFloat(p.totalWages||0),0);
+    const otherTotal = otherExpenses
+      .filter(e=>{ const d=new Date(e.date); return d.getFullYear()===yr&&d.getMonth()===mo-1; })
+      .reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const incomeTotal = income
+      .filter(i=>{ const d=new Date(i.date); return d.getFullYear()===yr&&d.getMonth()===mo-1; })
+      .reduce((s,i)=>s+parseFloat(i.amount||0),0);
+    return {wages:wagesTotal, other:otherTotal, totalExpenses:wagesTotal+otherTotal, income:incomeTotal, net:incomeTotal-(wagesTotal+otherTotal)};
+  },[selMonth,weeklyPaid,otherExpenses,income]);
+
+  // Annual P&L (Apr-Mar)
+  const annualPnL = useMemo(()=>{
+    const yr = parseInt(selYear);
+    const start = new Date(yr,3,1); // Apr 1
+    const end = new Date(yr+1,2,31,23,59,59); // Mar 31
+    const inRange = d => new Date(d)>=start && new Date(d)<=end;
+    const wages = weeklyPaid.filter(p=>inRange(p.weekStart)).reduce((s,p)=>s+parseFloat(p.totalWages||0),0);
+    const other = otherExpenses.filter(e=>inRange(e.date)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    const inc = income.filter(i=>inRange(i.date)).reduce((s,i)=>s+parseFloat(i.amount||0),0);
+    // By income type
+    const byType = {};
+    income.filter(i=>inRange(i.date)).forEach(i=>{ byType[i.type]=(byType[i.type]||0)+parseFloat(i.amount||0); });
+    return {wages, other, totalExpenses:wages+other, income:inc, net:inc-(wages+other), byType};
+  },[selYear,weeklyPaid,otherExpenses,income]);
+
+  const PnLCard = ({label,wages,other,income,net}) => <div>
+    <div className="summary-grid">
+      <div className="summary-card"><div className="label">Total Wages</div><div className="value red" style={{color:'var(--red)',fontSize:18}}>{fmt(wages)}</div></div>
+      <div className="summary-card"><div className="label">Other Expenses</div><div className="value" style={{color:'var(--earth)',fontSize:18}}>{fmt(other)}</div></div>
+      <div className="summary-card red"><div className="label">Total Expenses</div><div className="value" style={{fontSize:18}}>{fmt(wages+other)}</div></div>
+      <div className="summary-card"><div className="label">Income</div><div className="value" style={{color:'var(--green-dark)',fontSize:18}}>{fmt(income)}</div></div>
+      <div className="summary-card" style={{background:net>=0?'var(--green-dark)':'var(--red)',gridColumn:'span 1'}}>
+        <div className="label" style={{color:'rgba(255,255,255,.7)'}}>Net {net>=0?'Profit':'Loss'}</div>
+        <div className="value" style={{color:'var(--gold-light)',fontSize:20}}>{fmt(Math.abs(net))}</div>
+        <div className="sub" style={{color:'rgba(255,255,255,.5)'}}>{net>=0?'▲ Surplus':'▼ Deficit'}</div>
+      </div>
+    </div>
+  </div>;
+
+  return <div>
+    <div className="tabs">
+      {[['weekly','📅 Weekly'],['monthly','📊 Monthly P&L'],['annual','📈 Annual P&L']].map(([id,label])=>
+        <div key={id} className={'tab'+(tab===id?' active':'')} onClick={()=>setTab(id)}>{label}</div>
+      )}
+    </div>
+
+    {tab==='weekly'&&<div>
+      <div className="card">
+        <div className="card-header"><div className="card-title">Paid Weekly Payrolls</div></div>
+        <div className="card-body" style={{padding:0}}>
+          {weeklyPaid.length===0?<div className="empty">No paid payrolls yet</div>:
+          <div className="table-wrap"><table className="dt">
+            <thead><tr><th>Week</th><th style={{textAlign:'right'}}>Wages</th><th style={{textAlign:'right'}}>Other</th><th style={{textAlign:'right'}}>Total</th><th>Paid On</th></tr></thead>
+            <tbody>{[...weeklyPaid].sort((a,b)=>b.weekStart>a.weekStart?1:-1).map(p=>{
+              const weekOther = otherExpenses.filter(e=>e.weekStart===p.weekStart).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+              return <tr key={p.weekStart}>
+                <td style={{whiteSpace:'nowrap'}}>Week of {fmtDate(p.weekStart)}</td>
+                <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
+                <td style={{textAlign:'right'}}>{fmt(weekOther)}</td>
+                <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(parseFloat(p.totalWages||0)+weekOther)}</td>
+                <td style={{fontSize:12,color:'var(--gray-600)'}}>{fmtDate(p.paidAt)}</td>
+              </tr>;
+            })}</tbody>
+          </table></div>}
+        </div>
+      </div>
+    </div>}
+
+    {tab==='monthly'&&<div>
+      <div className="flex-between mb-12">
+        <div style={{fontWeight:600,fontSize:14,color:'var(--green-dark)'}}>Monthly P&L</div>
+        <input type="month" className="form-input" style={{width:'auto'}} value={selMonth} onChange={e=>setSelMonth(e.target.value)}/>
+      </div>
+      <PnLCard {...monthlyPnL}/>
+      {/* Income breakdown */}
+      <div className="card mt-12">
+        <div className="card-header"><div className="card-title">Income Breakdown</div></div>
+        <div className="card-body" style={{padding:0}}>
+          <div className="table-wrap"><table className="dt">
+            <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
+            <tbody>{income.filter(i=>{const d=new Date(i.date);const[yr,mo]=selMonth.split('-').map(Number);return d.getFullYear()===yr&&d.getMonth()===mo-1;}).sort((a,b)=>b.date>a.date?1:-1).map(i=><tr key={i.id}><td>{fmtDate(i.date)}</td><td>{i.type}</td><td style={{fontSize:12,color:'var(--gray-600)'}}>{i.note}</td><td style={{textAlign:'right',fontWeight:600}}>{fmt(i.amount)}</td></tr>)}
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>}
+
+    {tab==='annual'&&<div>
+      <div className="flex-between mb-12">
+        <div style={{fontWeight:600,fontSize:14,color:'var(--green-dark)'}}>Annual P&L (Apr–Mar)</div>
+        <select className="form-input form-select" style={{width:'auto'}} value={selYear} onChange={e=>setSelYear(e.target.value)}>
+          {Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-2+i;return<option key={y} value={y}>FY {y}–{(y+1).toString().slice(2)}</option>;})}
+        </select>
+      </div>
+      <PnLCard {...annualPnL}/>
+      <div className="card mt-12">
+        <div className="card-header"><div className="card-title">Income by Category</div></div>
+        <div className="card-body" style={{padding:0}}>
+          <div className="table-wrap"><table className="dt">
+            <thead><tr><th>Category</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
+            <tbody>{Object.entries(annualPnL.byType).sort(([,a],[,b])=>b-a).map(([type,amount])=><tr key={type}>
+              <td>{type}</td><td style={{textAlign:'right',fontWeight:600,color:'var(--green-dark)'}}>{fmt(amount)}</td>
+            </tr>)}</tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>}
+  </div>;
+}
+
+// ── Main App ──────────────────────────────────────────────
+const NAV = [
+  {id:'expenses',label:'Expenses',icon:'💰',section:'main'},
+  {id:'income',label:'Income',icon:'📥',section:'main'},
+  {id:'reports',label:'Reports',icon:'📊',section:'main'},
+  {id:'admin',label:'Admin',icon:'⚙️',section:'admin',adminOnly:true},
+];
+
+function App() {
+  const [user,setUser] = useState(null);
+  const [authCreds,setAuthCreds] = useState(null);
+  const [gasUrl,setGasUrl] = useState(()=>localStorage.getItem(LS_URL)||DEFAULT_GAS);
+  const [data,setData] = useState({employees:[],config:{},workTypes:[],expenseTypes:[],payroll:[],otherExpenses:[],income:[],users:[]});
+  const [page,setPage] = useState('expenses');
+  const [loading,setLoading] = useState(false);
+
+  // Check saved login
+  useEffect(()=>{
+    const saved = localStorage.getItem(LS_AUTH);
+    if(saved) {
+      try {
+        const {email,password} = JSON.parse(saved);
+        const url = localStorage.getItem(LS_URL)||DEFAULT_GAS;
+        if(email&&password&&url) {
+          setGasUrl(url);
+          setLoading(true);
+          apiGet(url,{action:'getAll',email,password}).then(r=>{
+            if(r&&!r.error) {
+              setData(r);
+              setUser(r.currentUser);
+              setAuthCreds({email,password});
+            } else { localStorage.removeItem(LS_AUTH); }
+          }).catch(()=>{ localStorage.removeItem(LS_AUTH); }).finally(()=>setLoading(false));
+        }
+      } catch{}
+    }
+  },[]);
+
+  const handleLogin = (u,email,password,url) => {
+    setUser(u); setAuthCreds({email,password}); setGasUrl(url);
+    refresh(url,email,password);
+  };
+
+  const refresh = useCallback(async(url,email,password)=>{
+    const u = url||gasUrl; const e = email||(authCreds?.email); const p = password||(authCreds?.password);
+    if(!u||!e||!p) return;
+    try {
+      const r = await apiGet(u,{action:'getAll',email:e,password:p});
+      if(r&&!r.error) { setData(r); localStorage.setItem(LS_DATA,JSON.stringify(r)); }
+    } catch{}
+  },[gasUrl,authCreds]);
+
+  const logout = () => { localStorage.removeItem(LS_AUTH); setUser(null); setAuthCreds(null); setData({employees:[],config:{},workTypes:[],expenseTypes:[],payroll:[],otherExpenses:[],income:[],users:[]}); };
+
+  if(loading) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#1a3d12,#2d5a27)',flexDirection:'column',gap:16}}>
+    <div style={{fontSize:48}}>🌿</div>
+    <Spinner/>
+    <div style={{color:'rgba(255,255,255,.6)',fontSize:13}}>Loading farm data…</div>
+  </div>;
+
+  if(!user) return <LoginScreen gasUrl={gasUrl} onLogin={handleLogin}/>;
+
+  const isAdmin = user.isAdmin===true||String(user.isAdmin).toUpperCase()==='TRUE';
+  const visibleNav = NAV.filter(n=>!n.adminOnly||isAdmin);
+
+  const pageHeaders = {
+    expenses:{title:'Expenses',sub:'Wages, other expenses & payment requests'},
+    income:{title:'Income',sub:'Record farm income by category'},
+    reports:{title:'Reports',sub:'Financial summaries and P&L'},
+    admin:{title:'Administration',sub:'Employees, users and configuration'},
+  };
+
+  const PageComponent = {
+    expenses:<ExpensesTab data={data} gasUrl={gasUrl} auth={authCreds} onRefresh={()=>refresh()}/>,
+    income:<IncomeTab data={data} gasUrl={gasUrl} auth={authCreds} onRefresh={()=>refresh()}/>,
+    reports:<ReportsTab data={data}/>,
+    admin:isAdmin?<AdminTab data={data} gasUrl={gasUrl} auth={authCreds} onRefresh={()=>refresh()}/>:null,
+  }[page];
+
+  return <div className="app">
+    {/* Sidebar */}
+    <aside className="sidebar">
+      <div className="sidebar-logo">
+        <h1>🌿 Pebble's Beach</h1>
+        <p>Estate Management</p>
+      </div>
+      <div className="sidebar-user">
+        <div className="sidebar-user-icon">{user.name?user.name[0].toUpperCase():'U'}</div>
+        <div className="sidebar-user-info">
+          <div className="name">{user.name}</div>
+          <div className="role">{isAdmin?'Administrator':'User'}</div>
+        </div>
+      </div>
+      <nav className="sidebar-nav">
+        {visibleNav.map(n=><div key={n.id} className={'nav-item'+(page===n.id?' active':'')} onClick={()=>setPage(n.id)}>
+          <span className="icon">{n.icon}</span>{n.label}
+        </div>)}
+      </nav>
+      <div className="nav-logout">
+        <button className="btn btn-ghost btn-sm" style={{width:'100%',justifyContent:'center',color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)'}} onClick={logout}>↩ Sign Out</button>
+      </div>
+    </aside>
+
+    {/* Main content */}
+    <main className="main">
+      <div className="main-header">
+        <div>
+          <h2>{pageHeaders[page]?.title}</h2>
+          <p>{pageHeaders[page]?.sub}</p>
+        </div>
+        <button className="btn btn-ghost btn-sm" onClick={()=>refresh()} title="Refresh data">↻ Sync</button>
+      </div>
+      <div className="main-content">{PageComponent}</div>
+    </main>
+
+    {/* Mobile bottom nav */}
+    <nav className="bottom-nav">
+      <div className="bottom-nav-items">
+        {visibleNav.map(n=><div key={n.id} className={'bottom-nav-item'+(page===n.id?' active':'')} onClick={()=>setPage(n.id)}>
+          <span className="icon">{n.icon}</span><span>{n.label}</span>
+        </div>)}
+      </div>
+    </nav>
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
