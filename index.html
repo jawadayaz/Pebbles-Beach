@@ -569,9 +569,15 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     contractFemale:'', contractFemaleSubType:''
   }));
 
+  // Normalize employee keys to strings (GAS may return numeric keys)
+  const normDays = days => days.map(day=>({
+    ...day,
+    employees: Object.fromEntries(Object.entries(day.employees||{}).map(([k,v])=>[String(k),v]))
+  }));
+
   const [entries,setEntries] = useState(()=>{
     const saved = existingPayroll?.data?.days;
-    return saved && saved.length ? saved : makeEmpty();
+    return (saved && saved.length) ? normDays(saved) : makeEmpty();
   });
 
   // Reload when week changes OR when payroll data updates (e.g. after save refreshes data)
@@ -579,7 +585,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   useEffect(()=>{
     const ep = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
     if(ep?.data?.days && ep.data.days.length) {
-      setEntries(ep.data.days);
+      setEntries(normDays(ep.data.days));
       setEditing(false);
     } else {
       setEntries(weekDates.map(()=>({
@@ -943,39 +949,39 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
 
 // ── Payment Request Tab ───────────────────────────────────
 function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
-  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
+  const allPayroll  = data.payroll||[];
+  const allOtherExp = data.otherExpenses||[];
+
+  // Default to most recently saved payroll week so data shows immediately on open
+  const [weekStart,setWeekStart] = useState(()=>{
+    const weeks = allPayroll.map(p=>toDateStr(p.weekStart)).filter(Boolean).sort().reverse();
+    return weeks[0] || getMondayOf(new Date());
+  });
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),4000);};
 
-  const allPayroll      = data.payroll||[];
-  const allOtherExp     = data.otherExpenses||[];
+  // Plain derivation every render — no stale closure/useMemo issues
+  const payroll       = allPayroll.find(p=>toDateStr(p.weekStart)===weekStart)||null;
+  const otherExpenses = allOtherExp.filter(e=>toDateStr(e.weekStart)===weekStart);
 
-  // Derive from data directly — always reflects latest after refresh
-  const payroll       = useMemo(()=>allPayroll.find(p=>toDateStr(p.weekStart)===weekStart)||null, [data.payroll, weekStart]);
-  const otherExpenses = useMemo(()=>allOtherExp.filter(e=>toDateStr(e.weekStart)===weekStart),    [data.otherExpenses, weekStart]);
-
-  // Parse wage data from the saved payroll record
-  // Re-derive directly from allPayroll+weekStart so it always reflects latest data
-  const wageData = useMemo(()=>{
-    const pr = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
-    if(!pr) return null;
-    const raw = pr.data;
-    if(!raw) return null;
-    if(typeof raw === 'string') { try { return JSON.parse(raw); } catch{ return null; } }
-    if(typeof raw === 'object' && !Array.isArray(raw)) return raw;
+  // Parse wageData — GAS safeJson parses server-side; guard string case too
+  const wageData = (()=>{
+    if(!payroll?.data) return null;
+    const raw = payroll.data;
+    if(typeof raw==='string'){try{return JSON.parse(raw);}catch{return null;}}
+    if(typeof raw==='object'&&!Array.isArray(raw)) return raw;
     return null;
-  },[data.payroll, weekStart]);
+  })();
 
   const totalWages  = parseFloat(payroll?.totalWages||0);
   const totalOther  = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
   const grandTotal  = totalWages + totalOther;
   const status      = payroll?.status||null;
 
-  // All weeks with pending status (shown at bottom)
   const pendingList = allPayroll
     .filter(p=>p.status==='pending')
-    .sort((a,b)=>b.weekStart>a.weekStart?1:-1);
+    .sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1);
 
   const submit = async()=>{
     if(!payroll){N('No payroll saved for this week yet — save wages first.','error');return;}
@@ -1014,7 +1020,6 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
         onChange={e=>setWeekStart(getMondayOf(e.target.value))}/>
     </div>
 
-    {!payroll&&<Alert type="info" msg="No payroll saved for this week. Go to Wages tab, enter data and Save."/>}
     {status==='pending'&&<Alert type="warn" msg="⏳ Payment request submitted — awaiting confirmation."/>}
     {status==='paid'&&<Alert type="success" msg="✅ Payment confirmed and closed for this week."/>}
 
