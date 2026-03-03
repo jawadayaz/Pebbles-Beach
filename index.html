@@ -213,8 +213,9 @@ const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',m
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 function getMondayOf(date) {
-  const d = new Date(date);
-  const day = d.getDay();
+  // Use noon to avoid timezone-induced day shifts
+  const d = typeof date === 'string' ? new Date(date + 'T12:00:00') : new Date(date);
+  const day = d.getDay(); // 0=Sun,1=Mon,...,6=Sat
   const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   return d.toISOString().split('T')[0];
@@ -528,218 +529,300 @@ function UsersTab({data,call,busy,auth}) {
 
 // ── Wages Tab ─────────────────────────────────────────────
 function WagesTab({data,gasUrl,auth,onRefresh}) {
-  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
-  const [busy,setBusy] = useState(false);
-  const [msg,setMsg] = useState(null);
-  const N = (t,tp='success') => { setMsg({t,tp}); setTimeout(()=>setMsg(null),4000); };
-
   const employees = data.employees||[];
   const workTypes = data.workTypes||[];
   const config = data.config||{};
-  const weekDates = useMemo(()=>getWeekDates(weekStart),[weekStart]);
   const estateSubTypes = workTypes.filter(w=>w.parent==='Estate').map(w=>w.name);
 
-  const existingPayroll = useMemo(()=>(data.payroll||[]).find(p=>p.weekStart===weekStart),[data.payroll,weekStart]);
+  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
+  const [editing,setEditing] = useState(true);
+  const [busy,setBusy] = useState(false);
+  const [msg,setMsg] = useState(null);
+  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),5000);};
+
+  const weekDates = useMemo(()=>getWeekDates(weekStart),[weekStart]);
+
+  // Find saved payroll for selected week
+  const existingPayroll = useMemo(()=>
+    (data.payroll||[]).find(p=>p.weekStart===weekStart)
+  ,[data.payroll, weekStart]);
+
   const isPending = existingPayroll?.status==='pending';
-  const isPaid = existingPayroll?.status==='paid';
-  const isSaved = !!existingPayroll;
+  const isPaid    = existingPayroll?.status==='paid';
+  const isSaved   = !!existingPayroll;
+  const isLocked  = isPending || isPaid || (isSaved && !editing);
 
-  const [editing,setEditing] = useState(!isSaved);
-
-  // When week changes: update editing mode based on whether payroll exists
-  useEffect(()=>{ setEditing(!existingPayroll); },[weekStart]);
-
-  const isLocked = isPending || isPaid || (isSaved && !editing);
-
-  const emptyEntry = useCallback(()=>({worked:false,otHours:'',workType:'',workSubType:''}),[]);
-  const makeEmptyDays = useCallback(()=>weekDates.map(()=>({
-    employees: Object.fromEntries(employees.map(e=>[e.id,{worked:false,otHours:'',workType:'',workSubType:''}])),
-    contractMale:'', contractFemale:'',
-    contractMaleSubType:'', contractFemaleSubType:''
-  })),[weekDates, employees]);
+  // Build a fresh empty days array
+  const makeEmpty = ()=>weekDates.map(()=>({
+    employees: Object.fromEntries(employees.map(e=>[String(e.id),
+      {worked:false,otHours:'',workType:'',workSubType:''}
+    ])),
+    contractMale:'', contractMaleSubType:'',
+    contractFemale:'', contractFemaleSubType:''
+  }));
 
   const [entries,setEntries] = useState(()=>{
-    if(existingPayroll?.data?.days) return existingPayroll.data.days;
-    return makeEmptyDays();
+    const saved = existingPayroll?.data?.days;
+    return saved && saved.length ? saved : makeEmpty();
   });
 
-  // Reload entries when week changes
+  // When week picker changes: load saved data or blank slate
   useEffect(()=>{
-    if(existingPayroll?.data?.days) setEntries(existingPayroll.data.days);
-    else setEntries(makeEmptyDays());
+    const ep = (data.payroll||[]).find(p=>p.weekStart===weekStart);
+    if(ep?.data?.days && ep.data.days.length) {
+      setEntries(ep.data.days);
+      setEditing(false);
+    } else {
+      setEntries(weekDates.map(()=>({
+        employees: Object.fromEntries(employees.map(e=>[String(e.id),
+          {worked:false,otHours:'',workType:'',workSubType:''}])),
+        contractMale:'', contractMaleSubType:'',
+        contractFemale:'', contractFemaleSubType:''
+      })));
+      setEditing(true);
+    }
   },[weekStart]);
 
-  const setEmpField = (di,empId,field,val) =>
+  const setEmpField = (di,empId,field,val)=>
     setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,
-      employees:{...day.employees,[empId]:{...(day.employees?.[empId]||{}),[field]:val}}}));
+      employees:{...day.employees,[String(empId)]:{
+        ...(day.employees?.[String(empId)]||{}), [field]:val
+      }}
+    }));
 
-  const setDayField = (di,field,val) =>
+  const setDayField = (di,field,val)=>
     setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,[field]:val}));
 
+  // Live totals
   const totals = useMemo(()=>{
-    const empTotals = {};
+    const empTotals={};
     employees.forEach(e=>{
-      let days=0,otHours=0;
-      entries.forEach(day=>{ const ed=day.employees?.[e.id]; if(ed?.worked){days++;otHours+=parseFloat(ed.otHours||0);} });
-      empTotals[e.id]={days,otHours,amount:days*parseFloat(e.dailyWage||0)+otHours*parseFloat(e.otRate||0)};
+      let days=0,ot=0;
+      entries.forEach(day=>{
+        const ed=day.employees?.[String(e.id)];
+        if(ed?.worked){days++;ot+=parseFloat(ed.otHours||0);}
+      });
+      empTotals[e.id]={days,otHours:ot,
+        amount:days*parseFloat(e.dailyWage||0)+ot*parseFloat(e.otRate||0)};
     });
     const mDays=entries.reduce((s,d)=>s+parseFloat(d.contractMale||0),0);
     const fDays=entries.reduce((s,d)=>s+parseFloat(d.contractFemale||0),0);
     const mAmt=mDays*parseFloat(config.contractMaleWage||0);
     const fAmt=fDays*parseFloat(config.contractFemaleWage||0);
-    return {empTotals,contractMale:{days:mDays,amount:mAmt},contractFemale:{days:fDays,amount:fAmt},
-      totalWages:Object.values(empTotals).reduce((s,e)=>s+e.amount,0)+mAmt+fAmt};
+    const totalWages=Object.values(empTotals).reduce((s,e)=>s+e.amount,0)+mAmt+fAmt;
+    return {empTotals,
+      contractMale:{days:mDays,amount:mAmt},
+      contractFemale:{days:fDays,amount:fAmt},
+      totalWages};
   },[entries,employees,config]);
 
-  const buildPayload = ()=>({weekStart,data:{
-    days:entries,
-    employees:employees.map(e=>({id:e.id,name:e.name,...totals.empTotals[e.id]})),
-    contractMale:totals.contractMale,contractFemale:totals.contractFemale,
-  },totalWages:totals.totalWages,totalOther:0});
+  // Validation: work type required for worked days; sub-type required if Estate
+  const validate = ()=>{
+    for(let di=0;di<entries.length;di++){
+      const day=entries[di];
+      for(const emp of employees){
+        const ed=day.employees?.[String(emp.id)];
+        if(!ed?.worked) continue;
+        if(!ed.workType){N(`${emp.name} — ${DAYS[di]}: Work type is required`,'error');return false;}
+        if(ed.workType==='Estate'&&!ed.workSubType){N(`${emp.name} — ${DAYS[di]}: Estate sub-type is required`,'error');return false;}
+      }
+      if(parseFloat(day.contractMale||0)>0&&!day.contractMaleSubType){N(`Contract Male — ${DAYS[di]}: Sub-type is required`,'error');return false;}
+      if(parseFloat(day.contractFemale||0)>0&&!day.contractFemaleSubType){N(`Contract Female — ${DAYS[di]}: Sub-type is required`,'error');return false;}
+    }
+    return true;
+  };
+
+  const buildPayload = ()=>({
+    weekStart,
+    data:{
+      days:entries,
+      employees:employees.map(e=>({id:e.id,name:e.name,...totals.empTotals[e.id]})),
+      contractMale:totals.contractMale,
+      contractFemale:totals.contractFemale,
+    },
+    totalWages:totals.totalWages,
+    totalOther:0,
+  });
 
   const save = async()=>{
-    if(isPending){N('Payment request already submitted — cannot edit','warn');return;}
+    if(isPending){N('Payment request already submitted for this week — locked','warn');return;}
     if(isPaid){N('This week is already paid','warn');return;}
+    if(!validate()) return;
     setBusy(true);
     try {
       const r=await apiGet(gasUrl,{action:'savePayroll',...auth,payload:JSON.stringify(buildPayload())});
-      if(r.ok){await onRefresh();N('Payroll saved!');setEditing(false);}
+      if(r.ok){await onRefresh();N('Payroll saved successfully!');setEditing(false);}
       else throw new Error(r.error);
     }catch(e){N(e.message,'error');}
     setBusy(false);
   };
 
-  // Snap date picker to Monday
+  // Week picker: only allow Mondays, snap any other day to its Monday
   const handleWeekChange = val=>{
-    const d=new Date(val+'T12:00:00');
-    setWeekStart(d.getDay()===1?val:getMondayOf(d));
+    // val is "YYYY-MM-DD". Parse at noon to avoid TZ issues.
+    const d = new Date(val+'T12:00:00');
+    const monday = getMondayOf(d);
+    setWeekStart(monday);
   };
 
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
 
-    <div className="card">
+    {/* Week header card */}
+    <div className="card" style={{marginBottom:12}}>
       <div className="card-header">
         <div>
           <div className="card-title">Weekly Payroll Entry</div>
           <div style={{fontSize:11,color:'var(--gray-500)',marginTop:2}}>
-            Week: {weekStart} — {weekDates[6]}
-            {isSaved&&<span className="badge badge-green" style={{marginLeft:8}}>Saved</span>}
+            {weekStart} → {weekDates[6]}
           </div>
         </div>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          <input type="date" className="form-input" style={{width:'auto',fontSize:13}}
-            value={weekStart} onChange={e=>handleWeekChange(e.target.value)}/>
+          <input type="date" className="form-input" style={{width:160,fontSize:13}}
+            value={weekStart}
+            onChange={e=>handleWeekChange(e.target.value)}
+          />
         </div>
       </div>
-      {isPending&&<div style={{padding:'8px 18px',background:'var(--gold-pale)',fontSize:12,color:'#7a5b00',borderBottom:'1px solid #fdd835'}}>⏳ Payment request submitted — editing locked until confirmed.</div>}
-      {isPaid&&<div style={{padding:'8px 18px',background:'var(--green-pale)',fontSize:12,color:'var(--green-dark)',borderBottom:'1px solid #a5d6a7'}}>✅ This week's payment is confirmed and recorded.</div>}
-      <div className="card-body" style={{padding:'12px 0 0'}}>
-        <div className="week-grid">
-          <table className="week-table" style={{width:'100%'}}>
-            <thead>
-              <tr>
-                <th style={{textAlign:'left',paddingLeft:12}}>Employee</th>
-                {weekDates.map((d,i)=><th key={d}>{DAYS[i]}<br/><span style={{fontSize:9,fontWeight:400}}>{d.slice(5)}</span></th>)}
-                <th>Days</th><th>OT Hrs</th><th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map(emp=>(
-                <tr key={emp.id}>
-                  <td className="emp-name">{emp.name}<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(emp.dailyWage)}/day · {fmt(emp.otRate)}/hr OT</span></td>
-                  {entries.map((day,di)=>{
-                    const ed=day.employees?.[emp.id]||{worked:false,otHours:'',workType:'',workSubType:''};
-                    return <td key={di}>
-                      <div className="day-cell">
-                        <label className="form-check" style={{justifyContent:'center'}}>
-                          <input type="checkbox" disabled={isLocked} checked={!!ed.worked}
-                            onChange={e=>setEmpField(di,emp.id,'worked',e.target.checked)}/>
-                          <span style={{fontSize:10}}>Worked</span>
-                        </label>
-                        {ed.worked&&<>
-                          <input className="num-input" type="number" min="0" step="0.5" placeholder="OT hrs"
-                            disabled={isLocked} value={ed.otHours||''}
-                            onChange={e=>setEmpField(di,emp.id,'otHours',e.target.value)}/>
+      {isPending&&<div style={{padding:'7px 16px',background:'#fff8e1',fontSize:12,color:'#7a5b00',borderTop:'1px solid #fdd835'}}>
+        ⏳ Payment request submitted — editing locked until marked as paid.
+      </div>}
+      {isPaid&&<div style={{padding:'7px 16px',background:'#e8f5e9',fontSize:12,color:'#1a5c1a',borderTop:'1px solid #a5d6a7'}}>
+        ✅ This week is paid and closed.
+      </div>}
+    </div>
+
+    {/* Payroll grid */}
+    <div className="card">
+      <div style={{overflowX:'auto'}}>
+        <table className="week-table" style={{width:'100%'}}>
+          <thead>
+            <tr>
+              <th style={{textAlign:'left',paddingLeft:12,minWidth:130}}>Employee</th>
+              {weekDates.map((d,i)=><th key={d} style={{minWidth:120}}>{DAYS[i]}<br/><span style={{fontSize:9,fontWeight:400}}>{d.slice(5)}</span></th>)}
+              <th style={{minWidth:50}}>Days</th>
+              <th style={{minWidth:60}}>OT Hrs</th>
+              <th style={{minWidth:80}}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Named employees */}
+            {employees.map(emp=>(
+              <tr key={emp.id}>
+                <td className="emp-name" style={{paddingLeft:12}}>
+                  {emp.name}<br/>
+                  <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(emp.dailyWage)}/d · {fmt(emp.otRate)}/hr OT</span>
+                </td>
+                {entries.map((day,di)=>{
+                  const ed=day.employees?.[String(emp.id)]||{};
+                  return <td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
+                    <div className="day-cell">
+                      <label className="form-check" style={{justifyContent:'center',gap:4}}>
+                        <input type="checkbox" disabled={isLocked}
+                          checked={!!ed.worked}
+                          onChange={e=>setEmpField(di,emp.id,'worked',e.target.checked)}/>
+                        <span style={{fontSize:10,color:'var(--gray-600)'}}>Worked</span>
+                      </label>
+                      {ed.worked&&<>
+                        <input className="num-input" type="number" min="0" step="0.5"
+                          placeholder="OT hrs" disabled={isLocked}
+                          value={ed.otHours||''}
+                          onChange={e=>setEmpField(di,emp.id,'otHours',e.target.value)}
+                          style={{width:'100%'}}/>
+                        <select className="num-input" style={{width:'100%'}} disabled={isLocked}
+                          value={ed.workType||''}
+                          onChange={e=>setEmpField(di,emp.id,'workType',e.target.value)}>
+                          <option value="">⚠ Work type*</option>
+                          <option value="PBH">PBH</option>
+                          <option value="Estate">Estate</option>
+                        </select>
+                        {ed.workType==='Estate'&&
                           <select className="num-input" style={{width:'100%'}} disabled={isLocked}
-                            value={ed.workType||''} onChange={e=>setEmpField(di,emp.id,'workType',e.target.value)}>
-                            <option value="">Work type</option>
-                            <option value="PBH">PBH</option>
-                            <option value="Estate">Estate</option>
-                          </select>
-                          {ed.workType==='Estate'&&<select className="num-input" style={{width:'100%'}} disabled={isLocked}
-                            value={ed.workSubType||''} onChange={e=>setEmpField(di,emp.id,'workSubType',e.target.value)}>
-                            <option value="">Sub-type</option>
+                            value={ed.workSubType||''}
+                            onChange={e=>setEmpField(di,emp.id,'workSubType',e.target.value)}>
+                            <option value="">⚠ Sub-type*</option>
                             {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
-                            <option value="Other">Other</option>
-                          </select>}
-                        </>}
-                      </div>
-                    </td>;
-                  })}
-                  <td className="total-cell">{totals.empTotals[emp.id]?.days||0}</td>
-                  <td className="total-cell">{totals.empTotals[emp.id]?.otHours||0}</td>
-                  <td className="total-cell" style={{color:'var(--green-dark)'}}>{fmt(totals.empTotals[emp.id]?.amount||0)}</td>
-                </tr>
-              ))}
+                          </select>
+                        }
+                      </>}
+                    </div>
+                  </td>;
+                })}
+                <td className="total-cell">{totals.empTotals[emp.id]?.days||0}</td>
+                <td className="total-cell">{totals.empTotals[emp.id]?.otHours||0}</td>
+                <td className="total-cell" style={{color:'var(--green-dark)'}}>{fmt(totals.empTotals[emp.id]?.amount||0)}</td>
+              </tr>
+            ))}
 
-              {/* Contract Male — Estate sub-type only */}
-              <tr className="contract-row">
-                <td className="emp-name">Contract Male<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractMaleWage)}/day · Estate</span></td>
-                {entries.map((day,di)=><td key={di}>
-                  <div className="day-cell">
-                    <input className="num-input" type="number" min="0" placeholder="# workers"
-                      disabled={isLocked} value={day.contractMale||''}
-                      onChange={e=>setDayField(di,'contractMale',e.target.value)}/>
-                    {parseFloat(day.contractMale||0)>0&&<select className="num-input" style={{width:'100%'}}
-                      disabled={isLocked} value={day.contractMaleSubType||''}
+            {/* Contract Male — Estate work type fixed, only sub-type selectable */}
+            <tr className="contract-row">
+              <td className="emp-name" style={{paddingLeft:12}}>
+                Contract Male<br/>
+                <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractMaleWage)}/day · Estate</span>
+              </td>
+              {entries.map((day,di)=><td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
+                <div className="day-cell">
+                  <input className="num-input" type="number" min="0" placeholder="# workers"
+                    disabled={isLocked} value={day.contractMale||''}
+                    onChange={e=>setDayField(di,'contractMale',e.target.value)}
+                    style={{width:'100%'}}/>
+                  {parseFloat(day.contractMale||0)>0&&
+                    <select className="num-input" style={{width:'100%'}} disabled={isLocked}
+                      value={day.contractMaleSubType||''}
                       onChange={e=>setDayField(di,'contractMaleSubType',e.target.value)}>
-                      <option value="">Sub-type</option>
+                      <option value="">⚠ Sub-type*</option>
                       {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
-                      <option value="Other">Other</option>
-                    </select>}
-                  </div>
-                </td>)}
-                <td className="total-cell">{totals.contractMale.days}</td>
-                <td className="total-cell">—</td>
-                <td className="total-cell">{fmt(totals.contractMale.amount)}</td>
-              </tr>
+                    </select>
+                  }
+                </div>
+              </td>)}
+              <td className="total-cell">{totals.contractMale.days}</td>
+              <td className="total-cell">—</td>
+              <td className="total-cell">{fmt(totals.contractMale.amount)}</td>
+            </tr>
 
-              {/* Contract Female — Estate sub-type only */}
-              <tr className="contract-row">
-                <td className="emp-name">Contract Female<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractFemaleWage)}/day · Estate</span></td>
-                {entries.map((day,di)=><td key={di}>
-                  <div className="day-cell">
-                    <input className="num-input" type="number" min="0" placeholder="# workers"
-                      disabled={isLocked} value={day.contractFemale||''}
-                      onChange={e=>setDayField(di,'contractFemale',e.target.value)}/>
-                    {parseFloat(day.contractFemale||0)>0&&<select className="num-input" style={{width:'100%'}}
-                      disabled={isLocked} value={day.contractFemaleSubType||''}
+            {/* Contract Female */}
+            <tr className="contract-row">
+              <td className="emp-name" style={{paddingLeft:12}}>
+                Contract Female<br/>
+                <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractFemaleWage)}/day · Estate</span>
+              </td>
+              {entries.map((day,di)=><td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
+                <div className="day-cell">
+                  <input className="num-input" type="number" min="0" placeholder="# workers"
+                    disabled={isLocked} value={day.contractFemale||''}
+                    onChange={e=>setDayField(di,'contractFemale',e.target.value)}
+                    style={{width:'100%'}}/>
+                  {parseFloat(day.contractFemale||0)>0&&
+                    <select className="num-input" style={{width:'100%'}} disabled={isLocked}
+                      value={day.contractFemaleSubType||''}
                       onChange={e=>setDayField(di,'contractFemaleSubType',e.target.value)}>
-                      <option value="">Sub-type</option>
+                      <option value="">⚠ Sub-type*</option>
                       {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
-                      <option value="Other">Other</option>
-                    </select>}
-                  </div>
-                </td>)}
-                <td className="total-cell">{totals.contractFemale.days}</td>
-                <td className="total-cell">—</td>
-                <td className="total-cell">{fmt(totals.contractFemale.amount)}</td>
-              </tr>
+                    </select>
+                  }
+                </div>
+              </td>)}
+              <td className="total-cell">{totals.contractFemale.days}</td>
+              <td className="total-cell">—</td>
+              <td className="total-cell">{fmt(totals.contractFemale.amount)}</td>
+            </tr>
 
-              <tr style={{background:'var(--green-pale)'}}>
-                <td colSpan={weekDates.length+1} className="emp-name fw-600" style={{textAlign:'right',paddingRight:12,color:'var(--green-dark)'}}>Total Wages</td>
-                <td className="total-cell" colSpan={2}></td>
-                <td className="total-cell" style={{fontSize:15}}>{fmt(totals.totalWages)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            {/* Total row */}
+            <tr style={{background:'var(--green-pale)'}}>
+              <td colSpan={weekDates.length+1} style={{textAlign:'right',paddingRight:12,fontWeight:600,fontSize:13,color:'var(--green-dark)',padding:'8px 12px'}}>
+                Total Wages
+              </td>
+              <td colSpan={2}></td>
+              <td className="total-cell" style={{fontSize:14,fontWeight:700}}>{fmt(totals.totalWages)}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    {/* Summary + Save/Edit card — always visible */}
-    <div className="card">
+    {/* Summary + action card — always visible */}
+    <div className="card" style={{marginTop:12}}>
       <div className="card-header">
         <div className="card-title">Week Summary</div>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
@@ -749,38 +832,40 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
             <button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}>✏️ Edit</button>}
           {!isPending&&!isPaid&&editing&&
             <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
-              {busy?<Spinner/>:null}💾 Save Payroll
+              {busy?<><Spinner/>&nbsp;</>:null}💾 Save Payroll
             </button>}
         </div>
       </div>
       <div className="card-body">
-        {totals.totalWages===0&&<div style={{color:'var(--gray-500)',fontSize:13}}>Enter attendance above to see summary.</div>}
-        <div className="summary-grid" style={{marginBottom:0}}>
-          {employees.filter(e=>totals.empTotals[e.id]?.days>0||totals.empTotals[e.id]?.otHours>0).map(e=><div key={e.id} className="summary-card">
-            <div className="label">{e.name}</div>
-            <div className="value" style={{fontSize:16}}>{fmt(totals.empTotals[e.id].amount)}</div>
-            <div className="sub">{totals.empTotals[e.id].days}d · {totals.empTotals[e.id].otHours||0}h OT</div>
-          </div>)}
-          {totals.contractMale.days>0&&<div className="summary-card">
-            <div className="label">Contract Male</div>
-            <div className="value" style={{fontSize:16}}>{fmt(totals.contractMale.amount)}</div>
-            <div className="sub">{totals.contractMale.days} worker-days</div>
-          </div>}
-          {totals.contractFemale.days>0&&<div className="summary-card">
-            <div className="label">Contract Female</div>
-            <div className="value" style={{fontSize:16}}>{fmt(totals.contractFemale.amount)}</div>
-            <div className="sub">{totals.contractFemale.days} worker-days</div>
-          </div>}
-          {totals.totalWages>0&&<div className="summary-card" style={{background:'var(--green-dark)'}}>
-            <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Total Wages</div>
-            <div className="value" style={{color:'var(--gold-light)',fontSize:18}}>{fmt(totals.totalWages)}</div>
-          </div>}
-        </div>
+        {totals.totalWages===0
+          ? <div style={{color:'var(--gray-500)',fontSize:13,textAlign:'center',padding:'8px 0'}}>Mark attendance above — summary will appear here.</div>
+          : <div className="summary-grid" style={{marginBottom:0}}>
+              {employees.filter(e=>(totals.empTotals[e.id]?.days||0)>0||(totals.empTotals[e.id]?.otHours||0)>0)
+                .map(e=><div key={e.id} className="summary-card">
+                  <div className="label">{e.name}</div>
+                  <div className="value" style={{fontSize:16}}>{fmt(totals.empTotals[e.id].amount)}</div>
+                  <div className="sub">{totals.empTotals[e.id].days}d · {totals.empTotals[e.id].otHours||0}h OT</div>
+                </div>)}
+              {totals.contractMale.days>0&&<div className="summary-card">
+                <div className="label">Contract Male</div>
+                <div className="value" style={{fontSize:16}}>{fmt(totals.contractMale.amount)}</div>
+                <div className="sub">{totals.contractMale.days} worker-days</div>
+              </div>}
+              {totals.contractFemale.days>0&&<div className="summary-card">
+                <div className="label">Contract Female</div>
+                <div className="value" style={{fontSize:16}}>{fmt(totals.contractFemale.amount)}</div>
+                <div className="sub">{totals.contractFemale.days} worker-days</div>
+              </div>}
+              <div className="summary-card" style={{background:'var(--green-dark)'}}>
+                <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Total Wages</div>
+                <div className="value" style={{color:'var(--gold-light)',fontSize:18}}>{fmt(totals.totalWages)}</div>
+              </div>
+            </div>
+        }
       </div>
     </div>
   </div>;
 }
-
 // ── Other Expenses Tab ────────────────────────────────────
 function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
   const [form,setForm] = useState({type:'',amount:'',note:'',date:new Date().toISOString().split('T')[0]});
@@ -854,66 +939,79 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
   const [msg,setMsg] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),4000);};
 
-  const allPayroll = data.payroll||[];
-  const allOtherExpenses = data.otherExpenses||[];
+  const allPayroll      = data.payroll||[];
+  const allOtherExp     = data.otherExpenses||[];
 
-  const payroll = allPayroll.find(p=>p.weekStart===weekStart);
-  const otherExpenses = allOtherExpenses.filter(e=>e.weekStart===weekStart);
+  // Find payroll for selected week
+  const payroll = allPayroll.find(p=>p.weekStart===weekStart)||null;
+  const otherExpenses = allOtherExp.filter(e=>e.weekStart===weekStart);
 
-  // Safely extract wage data — GAS returns parsed object already via getAll
+  // Parse wage data — GAS safeJson already parsed it, but guard both cases
   const wageData = useMemo(()=>{
-    if(!payroll?.data) return null;
-    const d = payroll.data;
-    if(typeof d==='string') { try { return JSON.parse(d); } catch{ return null; } }
-    return d;
-  },[payroll]);
+    if(!payroll) return null;
+    const raw = payroll.data;
+    if(!raw) return null;
+    if(typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch{ return null; }
+    }
+    // Already an object — but check it has the shape we expect
+    if(typeof raw === 'object' && !Array.isArray(raw)) return raw;
+    return null;
+  // Use JSON string of the data field as dep so it only recomputes when data actually changes
+  },[payroll ? JSON.stringify(payroll.data) : null]);
 
-  const totalWages = parseFloat(payroll?.totalWages||0);
-  const totalOther = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
-  const grandTotal = totalWages + totalOther;
-  const status = payroll?.status;
+  const totalWages  = parseFloat(payroll?.totalWages||0);
+  const totalOther  = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+  const grandTotal  = totalWages + totalOther;
+  const status      = payroll?.status||null;
 
-  const pendingRequests = allPayroll.filter(p=>p.status==='pending')
+  // All weeks with pending status (shown at bottom)
+  const pendingList = allPayroll
+    .filter(p=>p.status==='pending')
     .sort((a,b)=>b.weekStart>a.weekStart?1:-1);
 
   const submit = async()=>{
-    if(!payroll){N('No payroll saved for this week yet — go to Wages tab first.','error');return;}
-    if(status==='pending'){N('Payment request already submitted for this week','warn');return;}
-    if(status==='paid'){N('This week is already paid','warn');return;}
+    if(!payroll){N('No payroll saved for this week yet — save wages first.','error');return;}
+    if(status==='pending'){N('Already submitted — awaiting payment confirmation.','warn');return;}
+    if(status==='paid'){N('This week is already paid.','warn');return;}
     setBusy(true);
     try {
-      const payload={weekStart,
-        data:{...(wageData||{}),otherExpenses:otherExpenses.map(e=>({type:e.type,amount:e.amount,note:e.note}))},
-        totalWages,totalOther};
+      const payload={
+        weekStart,
+        data:{
+          ...(wageData||{}),
+          otherExpenses:otherExpenses.map(e=>({type:e.type,amount:e.amount,note:e.note}))
+        },
+        totalWages,
+        totalOther,
+      };
       const r=await apiGet(gasUrl,{action:'submitPaymentRequest',...auth,payload:JSON.stringify(payload)});
-      if(r.ok){await onRefresh();N('Payment request sent — email dispatched!');}
+      if(r.ok){await onRefresh();N('✅ Payment request sent — email dispatched!');}
       else throw new Error(r.error);
     }catch(e){N(e.message,'error');}
     setBusy(false);
   };
 
-  const WageRow = ({label,days,otHours,amount,highlight})=>
-    <tr style={highlight?{background:'var(--gold-pale)'}:{}}>
-      <td className="fw-600">{label}</td>
-      <td style={{textAlign:'center'}}>{days}</td>
-      <td style={{textAlign:'center'}}>{otHours!==undefined?otHours:'—'}</td>
-      <td style={{textAlign:'right'}}>{fmt(amount)}</td>
-    </tr>;
+  const empRows = wageData?.employees?.filter(e=>parseFloat(e.days||0)>0||parseFloat(e.otHours||0)>0)||[];
+  const hasMale   = parseFloat(wageData?.contractMale?.days||0)>0;
+  const hasFemale = parseFloat(wageData?.contractFemale?.days||0)>0;
 
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
 
-    <div className="flex-between mb-12">
+    {/* Week selector */}
+    <div className="flex-between" style={{marginBottom:12}}>
       <div style={{fontWeight:600,fontSize:14,color:'var(--green-dark)'}}>Select Week</div>
-      <input type="date" className="form-input" style={{width:'auto'}} value={weekStart}
+      <input type="date" className="form-input" style={{width:160}}
+        value={weekStart}
         onChange={e=>setWeekStart(getMondayOf(e.target.value))}/>
     </div>
 
-    {!payroll&&<Alert type="info" msg="No payroll saved for this week yet. Go to Wages tab to enter and save first."/>}
-    {status==='pending'&&<Alert type="warn" msg="⏳ Payment request submitted — awaiting confirmation from admin."/>}
-    {status==='paid'&&<Alert type="success" msg="✅ Payment confirmed and recorded for this week."/>}
+    {!payroll&&<Alert type="info" msg="No payroll saved for this week. Go to Wages tab, enter data and Save."/>}
+    {status==='pending'&&<Alert type="warn" msg="⏳ Payment request submitted — awaiting confirmation."/>}
+    {status==='paid'&&<Alert type="success" msg="✅ Payment confirmed and closed for this week."/>}
 
-    {/* Totals summary */}
+    {/* Summary totals */}
     <div className="summary-grid">
       <div className="summary-card">
         <div className="label">Total Wages</div>
@@ -932,27 +1030,52 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
       </div>
     </div>
 
-    {/* Wage breakdown table */}
-    {wageData&&<div className="card">
-      <div className="card-header"><div className="card-title">Wage Breakdown</div></div>
+    {/* Wage breakdown — show whenever payroll is saved */}
+    {payroll&&<div className="card">
+      <div className="card-header">
+        <div className="card-title">Wage Breakdown</div>
+        <span className="badge badge-gray fs-11">Week of {fmtDate(weekStart)}</span>
+      </div>
       <div className="card-body" style={{padding:0}}>
-        <div className="table-wrap"><table className="dt">
-          <thead><tr><th>Employee</th><th style={{textAlign:'center'}}>Days</th><th style={{textAlign:'center'}}>OT Hrs</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
-          <tbody>
-            {(wageData.employees||[]).filter(e=>parseFloat(e.days||0)>0||parseFloat(e.otHours||0)>0)
-              .map((e,i)=><WageRow key={i} label={e.name} days={e.days} otHours={e.otHours||0} amount={e.amount}/>)}
-            {parseFloat(wageData.contractMale?.days||0)>0&&
-              <WageRow label="Contract Male" days={wageData.contractMale.days} amount={wageData.contractMale.amount} highlight/>}
-            {parseFloat(wageData.contractFemale?.days||0)>0&&
-              <WageRow label="Contract Female" days={wageData.contractFemale.days} amount={wageData.contractFemale.amount} highlight/>}
-            <tr style={{background:'var(--green-pale)'}}><td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
-              <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td></tr>
-          </tbody>
-        </table></div>
+        {(empRows.length===0&&!hasMale&&!hasFemale)
+          ? <div className="empty">No wage entries for this week</div>
+          : <div className="table-wrap"><table className="dt">
+              <thead><tr>
+                <th>Employee / Labour</th>
+                <th style={{textAlign:'center'}}>Days</th>
+                <th style={{textAlign:'center'}}>OT Hrs</th>
+                <th style={{textAlign:'right'}}>Amount</th>
+              </tr></thead>
+              <tbody>
+                {empRows.map((e,i)=><tr key={i}>
+                  <td className="fw-600">{e.name}</td>
+                  <td style={{textAlign:'center'}}>{e.days}</td>
+                  <td style={{textAlign:'center'}}>{e.otHours||0}</td>
+                  <td style={{textAlign:'right'}}>{fmt(e.amount)}</td>
+                </tr>)}
+                {hasMale&&<tr style={{background:'var(--gold-pale)'}}>
+                  <td>Contract Male</td>
+                  <td style={{textAlign:'center'}}>{wageData.contractMale.days}</td>
+                  <td style={{textAlign:'center'}}>—</td>
+                  <td style={{textAlign:'right'}}>{fmt(wageData.contractMale.amount)}</td>
+                </tr>}
+                {hasFemale&&<tr style={{background:'var(--gold-pale)'}}>
+                  <td>Contract Female</td>
+                  <td style={{textAlign:'center'}}>{wageData.contractFemale.days}</td>
+                  <td style={{textAlign:'center'}}>—</td>
+                  <td style={{textAlign:'right'}}>{fmt(wageData.contractFemale.amount)}</td>
+                </tr>}
+                <tr style={{background:'var(--green-pale)'}}>
+                  <td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
+                  <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td>
+                </tr>
+              </tbody>
+            </table></div>
+        }
       </div>
     </div>}
 
-    {/* Other expenses table */}
+    {/* Other expenses */}
     {otherExpenses.length>0&&<div className="card">
       <div className="card-header"><div className="card-title">Other Expenses This Week</div></div>
       <div className="card-body" style={{padding:0}}>
@@ -960,46 +1083,62 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
           <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
           <tbody>
             {otherExpenses.map(e=><tr key={e.id}>
-              <td>{fmtDate(e.date)}</td><td>{e.type}</td>
+              <td>{fmtDate(e.date)}</td>
+              <td>{e.type}</td>
               <td style={{fontSize:12,color:'var(--gray-600)'}}>{e.note}</td>
               <td style={{textAlign:'right'}}>{fmt(e.amount)}</td>
             </tr>)}
-            <tr style={{background:'var(--green-pale)'}}><td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Other</td>
-              <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalOther)}</td></tr>
+            <tr style={{background:'var(--green-pale)'}}>
+              <td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Other</td>
+              <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalOther)}</td>
+            </tr>
           </tbody>
         </table></div>
       </div>
     </div>}
 
-    {/* Submit */}
+    {/* Submit button */}
     {payroll&&status!=='paid'&&status!=='pending'&&
       <button className="btn btn-gold" onClick={submit} disabled={busy}
-        style={{width:'100%',justifyContent:'center',padding:12,marginBottom:16}}>
-        {busy?<Spinner/>:null}📧 Submit Payment Request
+        style={{width:'100%',justifyContent:'center',padding:'12px',marginBottom:16}}>
+        {busy?<><Spinner/>&nbsp;</>:null}📧 Submit Payment Request
       </button>}
 
-    {/* Pending requests list */}
-    {pendingRequests.length>0&&<div className="card">
-      <div className="card-header"><div className="card-title">⏳ Pending Payment Requests</div></div>
+    {/* Pending requests — always visible if any exist */}
+    {pendingList.length>0&&<div className="card">
+      <div className="card-header">
+        <div className="card-title">⏳ Pending Payment Requests</div>
+        <span className="badge badge-gold">{pendingList.length} pending</span>
+      </div>
       <div className="card-body" style={{padding:0}}>
         <div className="table-wrap"><table className="dt">
-          <thead><tr><th>Week</th><th style={{textAlign:'right'}}>Wages</th><th style={{textAlign:'right'}}>Other</th><th style={{textAlign:'right'}}>Total</th><th>Submitted</th></tr></thead>
-          <tbody>{pendingRequests.map(p=>{
-            const pOther=allOtherExpenses.filter(e=>e.weekStart===p.weekStart).reduce((s,e)=>s+parseFloat(e.amount||0),0);
-            return <tr key={p.weekStart}>
-              <td style={{whiteSpace:'nowrap'}}>Week of {fmtDate(p.weekStart)}</td>
-              <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
-              <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
-              <td style={{textAlign:'right',fontWeight:700,color:'var(--gold)'}}>{fmt(parseFloat(p.totalWages||0)+pOther)}</td>
-              <td style={{fontSize:12,color:'var(--gray-600)'}}>{fmtDate(p.submittedAt)}</td>
-            </tr>;
-          })}</tbody>
+          <thead><tr>
+            <th>Week of</th>
+            <th style={{textAlign:'right'}}>Wages</th>
+            <th style={{textAlign:'right'}}>Other</th>
+            <th style={{textAlign:'right'}}>Total</th>
+            <th>Submitted</th>
+          </tr></thead>
+          <tbody>
+            {pendingList.map(p=>{
+              const pOther=allOtherExp.filter(e=>e.weekStart===p.weekStart)
+                .reduce((s,e)=>s+parseFloat(e.amount||0),0);
+              return <tr key={p.weekStart}>
+                <td style={{whiteSpace:'nowrap'}}>{fmtDate(p.weekStart)}</td>
+                <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
+                <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
+                <td style={{textAlign:'right',fontWeight:700,color:'var(--gold)'}}>
+                  {fmt(parseFloat(p.totalWages||0)+pOther)}
+                </td>
+                <td style={{fontSize:12,color:'var(--gray-600)'}}>{fmtDate(p.submittedAt)}</td>
+              </tr>;
+            })}
+          </tbody>
         </table></div>
       </div>
     </div>}
   </div>;
 }
-
 // ── Expenses Main Tab ─────────────────────────────────────
 function ExpensesTab({data,gasUrl,auth,onRefresh}) {
   const [tab,setTab] = useState('wages');
