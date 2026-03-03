@@ -569,15 +569,9 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     contractFemale:'', contractFemaleSubType:''
   }));
 
-  // Normalize employee keys to strings (GAS may return numeric keys)
-  const normDays = days => days.map(day=>({
-    ...day,
-    employees: Object.fromEntries(Object.entries(day.employees||{}).map(([k,v])=>[String(k),v]))
-  }));
-
   const [entries,setEntries] = useState(()=>{
     const saved = existingPayroll?.data?.days;
-    return (saved && saved.length) ? normDays(saved) : makeEmpty();
+    return saved && saved.length ? saved : makeEmpty();
   });
 
   // Reload when week changes OR when payroll data updates (e.g. after save refreshes data)
@@ -585,7 +579,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   useEffect(()=>{
     const ep = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
     if(ep?.data?.days && ep.data.days.length) {
-      setEntries(normDays(ep.data.days));
+      setEntries(ep.data.days);
       setEditing(false);
     } else {
       setEntries(weekDates.map(()=>({
@@ -949,39 +943,39 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
 
 // ── Payment Request Tab ───────────────────────────────────
 function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
-  const allPayroll  = data.payroll||[];
-  const allOtherExp = data.otherExpenses||[];
-
-  // Default to most recently saved payroll week so data shows immediately on open
-  const [weekStart,setWeekStart] = useState(()=>{
-    const weeks = allPayroll.map(p=>toDateStr(p.weekStart)).filter(Boolean).sort().reverse();
-    return weeks[0] || getMondayOf(new Date());
-  });
+  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),4000);};
 
-  // Plain derivation every render — no stale closure/useMemo issues
-  const payroll       = allPayroll.find(p=>toDateStr(p.weekStart)===weekStart)||null;
-  const otherExpenses = allOtherExp.filter(e=>toDateStr(e.weekStart)===weekStart);
+  const allPayroll      = data.payroll||[];
+  const allOtherExp     = data.otherExpenses||[];
 
-  // Parse wageData — GAS safeJson parses server-side; guard string case too
-  const wageData = (()=>{
-    if(!payroll?.data) return null;
-    const raw = payroll.data;
-    if(typeof raw==='string'){try{return JSON.parse(raw);}catch{return null;}}
-    if(typeof raw==='object'&&!Array.isArray(raw)) return raw;
+  // Derive from data directly — always reflects latest after refresh
+  const payroll       = useMemo(()=>allPayroll.find(p=>toDateStr(p.weekStart)===weekStart)||null, [data.payroll, weekStart]);
+  const otherExpenses = useMemo(()=>allOtherExp.filter(e=>toDateStr(e.weekStart)===weekStart),    [data.otherExpenses, weekStart]);
+
+  // Parse wage data from the saved payroll record
+  // Re-derive directly from allPayroll+weekStart so it always reflects latest data
+  const wageData = useMemo(()=>{
+    const pr = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
+    if(!pr) return null;
+    const raw = pr.data;
+    if(!raw) return null;
+    if(typeof raw === 'string') { try { return JSON.parse(raw); } catch{ return null; } }
+    if(typeof raw === 'object' && !Array.isArray(raw)) return raw;
     return null;
-  })();
+  },[data.payroll, weekStart]);
 
   const totalWages  = parseFloat(payroll?.totalWages||0);
   const totalOther  = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
   const grandTotal  = totalWages + totalOther;
   const status      = payroll?.status||null;
 
+  // All weeks with pending status (shown at bottom)
   const pendingList = allPayroll
     .filter(p=>p.status==='pending')
-    .sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1);
+    .sort((a,b)=>b.weekStart>a.weekStart?1:-1);
 
   const submit = async()=>{
     if(!payroll){N('No payroll saved for this week yet — save wages first.','error');return;}
@@ -1020,6 +1014,47 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
         onChange={e=>setWeekStart(getMondayOf(e.target.value))}/>
     </div>
 
+    {/* DEBUG PANEL — remove once working */}
+    <div style={{background:'#1a1a2e',color:'#00ff88',fontFamily:'monospace',fontSize:11,padding:10,borderRadius:6,marginBottom:10,overflowX:'auto'}}>
+      <div>weekStart (looking for): <b style={{color:'#ffd700'}}>{weekStart}</b></div>
+      <div>allPayroll count: <b style={{color:'#ffd700'}}>{allPayroll.length}</b></div>
+      <div>payroll found: <b style={{color:'#ffd700'}}>{payroll?'YES':'NO'}</b></div>
+      <div>wageData: <b style={{color:'#ffd700'}}>{wageData?'has data':'null'}</b></div>
+      <div>otherExpenses count: <b style={{color:'#ffd700'}}>{otherExpenses.length}</b></div>
+      {allPayroll.slice(0,5).map((p,i)=><div key={i} style={{color:'#aaa'}}>
+        payroll[{i}]: weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(p.weekStart)}</b> status={p.status} toDateStr={toDateStr(p.weekStart)}
+      </div>)}
+      {allOtherExp.slice(0,3).map((e,i)=><div key={i} style={{color:'#aaa'}}>
+        expense[{i}]: weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(e.weekStart)}</b> toDateStr={toDateStr(e.weekStart)}
+      </div>)}
+    </div>
+
+    {/* DEBUG — screenshot this and share */}
+    <div style={{background:'#0d1117',color:'#58ff8a',fontFamily:'monospace',fontSize:11,padding:12,borderRadius:6,marginBottom:12,lineHeight:1.7}}>
+      <div>📅 weekStart state: <b style={{color:'#ffd700'}}>{weekStart}</b></div>
+      <div>📦 data.payroll length: <b style={{color:'#ffd700'}}>{(data.payroll||[]).length}</b></div>
+      <div>🔍 payroll found: <b style={{color:payroll?'#58ff8a':'#ff5555'}}>{payroll ? 'YES ✓' : 'NO ✗'}</b></div>
+      <div>💰 wageData: <b style={{color:wageData?'#58ff8a':'#ff5555'}}>{wageData ? 'has data ✓' : 'null ✗'}</b></div>
+      <div>🧾 otherExpenses this week: <b style={{color:'#ffd700'}}>{otherExpenses.length}</b></div>
+      <div style={{marginTop:6,color:'#aaa'}}>— all payroll rows —</div>
+      {(data.payroll||[]).map((p,i)=>(
+        <div key={i} style={{color: toDateStr(p.weekStart)===weekStart?'#58ff8a':'#888'}}>
+          [{i}] weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(p.weekStart)}</b>
+          {' '}→ toDateStr=<b style={{color:'#ff9f43'}}>{toDateStr(p.weekStart)}</b>
+          {' '}status={p.status}
+          {' '}match={String(toDateStr(p.weekStart)===weekStart)}
+        </div>
+      ))}
+      <div style={{marginTop:6,color:'#aaa'}}>— all otherExpenses rows —</div>
+      {(data.otherExpenses||[]).slice(0,5).map((e,i)=>(
+        <div key={i} style={{color:'#888'}}>
+          [{i}] weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(e.weekStart)}</b>
+          {' '}→ toDateStr=<b style={{color:'#ff9f43'}}>{toDateStr(e.weekStart)}</b>
+        </div>
+      ))}
+    </div>
+
+    {!payroll&&<Alert type="info" msg="No payroll saved for this week. Go to Wages tab, enter data and Save."/>}
     {status==='pending'&&<Alert type="warn" msg="⏳ Payment request submitted — awaiting confirmation."/>}
     {status==='paid'&&<Alert type="success" msg="✅ Payment confirmed and closed for this week."/>}
 
