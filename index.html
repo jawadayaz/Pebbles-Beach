@@ -221,6 +221,14 @@ function getMondayOf(date) {
   return d.toISOString().split('T')[0];
 }
 
+// Normalize any date value (string or Date object) to YYYY-MM-DD
+function toDateStr(v) {
+  if (!v) return '';
+  if (typeof v === 'string') return v.slice(0, 10);
+  if (v instanceof Date) return v.toISOString().split('T')[0];
+  return String(v).slice(0, 10);
+}
+
 function getWeekDates(monday) {
   const dates = [];
   for (let i = 0; i < 7; i++) {
@@ -544,7 +552,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
 
   // Find saved payroll for selected week
   const existingPayroll = useMemo(()=>
-    (data.payroll||[]).find(p=>p.weekStart===weekStart)
+    (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart)
   ,[data.payroll, weekStart]);
 
   const isPending = existingPayroll?.status==='pending';
@@ -567,9 +575,9 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   });
 
   // Reload when week changes OR when payroll data updates (e.g. after save refreshes data)
-  const payrollSig = (data.payroll||[]).map(p=>p.weekStart+':'+p.status).join(',');
+  const payrollSig = (data.payroll||[]).map(p=>toDateStr(p.weekStart)+':'+p.status).join(',');
   useEffect(()=>{
-    const ep = (data.payroll||[]).find(p=>p.weekStart===weekStart);
+    const ep = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
     if(ep?.data?.days && ep.data.days.length) {
       setEntries(ep.data.days);
       setEditing(false);
@@ -944,13 +952,13 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
   const allOtherExp     = data.otherExpenses||[];
 
   // Derive from data directly — always reflects latest after refresh
-  const payroll       = useMemo(()=>allPayroll.find(p=>p.weekStart===weekStart)||null, [data.payroll, weekStart]);
-  const otherExpenses = useMemo(()=>allOtherExp.filter(e=>e.weekStart===weekStart),    [data.otherExpenses, weekStart]);
+  const payroll       = useMemo(()=>allPayroll.find(p=>toDateStr(p.weekStart)===weekStart)||null, [data.payroll, weekStart]);
+  const otherExpenses = useMemo(()=>allOtherExp.filter(e=>toDateStr(e.weekStart)===weekStart),    [data.otherExpenses, weekStart]);
 
   // Parse wage data from the saved payroll record
   // Re-derive directly from allPayroll+weekStart so it always reflects latest data
   const wageData = useMemo(()=>{
-    const pr = (data.payroll||[]).find(p=>p.weekStart===weekStart);
+    const pr = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
     if(!pr) return null;
     const raw = pr.data;
     if(!raw) return null;
@@ -1120,10 +1128,10 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
           </tr></thead>
           <tbody>
             {pendingList.map(p=>{
-              const pOther=allOtherExp.filter(e=>e.weekStart===p.weekStart)
+              const pOther=allOtherExp.filter(e=>toDateStr(e.weekStart)===toDateStr(p.weekStart))
                 .reduce((s,e)=>s+parseFloat(e.amount||0),0);
               return <tr key={p.weekStart}>
-                <td style={{whiteSpace:'nowrap'}}>{fmtDate(p.weekStart)}</td>
+                <td style={{whiteSpace:'nowrap'}}>{fmtDate(toDateStr(p.weekStart))}</td>
                 <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
                 <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
                 <td style={{textAlign:'right',fontWeight:700,color:'var(--gold)'}}>
@@ -1297,9 +1305,9 @@ function ReportsTab({data}) {
         <th>Submitted</th>
       </tr></thead>
       <tbody>{rows.map(p=>{
-        const pOther=otherExpenses.filter(e=>e.weekStart===p.weekStart).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+        const pOther=otherExpenses.filter(e=>toDateStr(e.weekStart)===toDateStr(p.weekStart)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
         return <tr key={p.weekStart}>
-          <td style={{whiteSpace:'nowrap'}}>{fmtDate(p.weekStart)}</td>
+          <td style={{whiteSpace:'nowrap'}}>{fmtDate(toDateStr(p.weekStart))}</td>
           <td>{p.status==='paid'?<span className="badge badge-green">Paid</span>:p.status==='pending'?<span className="badge badge-gold">Pending</span>:<span className="badge badge-gray">Draft</span>}</td>
           <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
           <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
@@ -1385,7 +1393,7 @@ function ReportsTab({data}) {
             <thead><tr><th>Week of</th><th>Status</th><th style={{textAlign:'right'}}>Total Wages</th></tr></thead>
             <tbody>
               {allSavedPayroll.filter(p=>{const d=new Date(p.weekStart);const[yr,mo]=selMonth.split('-').map(Number);return d.getFullYear()===yr&&d.getMonth()===mo-1;})
-                .map(p=><tr key={p.weekStart}><td>{fmtDate(p.weekStart)}</td>
+                .map(p=><tr key={p.weekStart}><td>{fmtDate(toDateStr(p.weekStart))}</td>
                   <td>{p.status==='paid'?<span className="badge badge-green">Paid</span>:p.status==='pending'?<span className="badge badge-gold">Pending</span>:<span className="badge badge-gray">Draft</span>}</td>
                   <td style={{textAlign:'right',fontWeight:600}}>{fmt(p.totalWages)}</td></tr>)}
             </tbody>
