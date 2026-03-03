@@ -566,7 +566,8 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     return saved && saved.length ? saved : makeEmpty();
   });
 
-  // When week picker changes: load saved data or blank slate
+  // Reload when week changes OR when payroll data updates (e.g. after save refreshes data)
+  const payrollSig = (data.payroll||[]).map(p=>p.weekStart+':'+p.status).join(',');
   useEffect(()=>{
     const ep = (data.payroll||[]).find(p=>p.weekStart===weekStart);
     if(ep?.data?.days && ep.data.days.length) {
@@ -581,7 +582,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
       })));
       setEditing(true);
     }
-  },[weekStart]);
+  },[weekStart, payrollSig]);
 
   const setEmpField = (di,empId,field,val)=>
     setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,
@@ -942,23 +943,21 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
   const allPayroll      = data.payroll||[];
   const allOtherExp     = data.otherExpenses||[];
 
-  // Find payroll for selected week
-  const payroll = allPayroll.find(p=>p.weekStart===weekStart)||null;
-  const otherExpenses = allOtherExp.filter(e=>e.weekStart===weekStart);
+  // Derive from data directly — always reflects latest after refresh
+  const payroll       = useMemo(()=>allPayroll.find(p=>p.weekStart===weekStart)||null, [data.payroll, weekStart]);
+  const otherExpenses = useMemo(()=>allOtherExp.filter(e=>e.weekStart===weekStart),    [data.otherExpenses, weekStart]);
 
-  // Parse wage data — GAS safeJson already parsed it, but guard both cases
+  // Parse wage data from the saved payroll record
+  // Re-derive directly from allPayroll+weekStart so it always reflects latest data
   const wageData = useMemo(()=>{
-    if(!payroll) return null;
-    const raw = payroll.data;
+    const pr = (data.payroll||[]).find(p=>p.weekStart===weekStart);
+    if(!pr) return null;
+    const raw = pr.data;
     if(!raw) return null;
-    if(typeof raw === 'string') {
-      try { return JSON.parse(raw); } catch{ return null; }
-    }
-    // Already an object — but check it has the shape we expect
+    if(typeof raw === 'string') { try { return JSON.parse(raw); } catch{ return null; } }
     if(typeof raw === 'object' && !Array.isArray(raw)) return raw;
     return null;
-  // Use JSON string of the data field as dep so it only recomputes when data actually changes
-  },[payroll ? JSON.stringify(payroll.data) : null]);
+  },[data.payroll, weekStart]);
 
   const totalWages  = parseFloat(payroll?.totalWages||0);
   const totalOther  = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
