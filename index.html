@@ -148,8 +148,9 @@ table.dt tr:last-child td{border-bottom:none;}
 .total-cell{font-weight:700;color:var(--green-dark);text-align:right;padding-right:8px;}
 
 /* ── Tabs ── */
-.tabs{display:flex;gap:2px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;flex-wrap:wrap;}
-.tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;}
+.tabs{display:flex;gap:2px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;flex-shrink:0;}
 .tab.active{background:#fff;color:var(--green-dark);box-shadow:var(--shadow);}
 .tab:hover:not(.active){color:var(--green);}
 
@@ -171,6 +172,7 @@ table.dt tr:last-child td{border-bottom:none;}
   .main-header{padding:12px 14px;}
   .form-row-2,.form-row-3{grid-template-columns:1fr;}
   .week-table{font-size:11px;}
+  .tab{padding:6px 10px;font-size:12px;}
 }
 
 /* ── Misc ── */
@@ -205,7 +207,7 @@ const {useState,useEffect,useCallback,useMemo,useRef} = React;
 const LS_AUTH='farm_auth';
 const LS_DATA='farm_data';
 const LS_URL='farm_url';
-const DEFAULT_GAS='';  // Paste your GAS URL here
+const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbxa87-1zyZSQI0T9M3olkMgTjOOfcw_ACWaHCZxOQP7ghIizVKHMExC66NI7kJxFG0J/exec';
 
 // ── Utilities ─────────────────────────────────────────────
 const fmt = n => '₹' + Number(n||0).toLocaleString('en-IN');
@@ -221,12 +223,31 @@ function getMondayOf(date) {
   return d.toISOString().split('T')[0];
 }
 
-// Normalize any date value (string or Date object) to YYYY-MM-DD
+// Normalize any date value to YYYY-MM-DD in LOCAL time
+// GAS returns dates as UTC ISO strings e.g. "2026-03-01T18:30:00.000Z"
+// which is actually 2026-03-02 in IST (+5:30) — so we must use local date, not UTC slice
 function toDateStr(v) {
   if (!v) return '';
-  if (typeof v === 'string') return v.slice(0, 10);
-  if (v instanceof Date) return v.toISOString().split('T')[0];
-  return String(v).slice(0, 10);
+  if (typeof v === 'string') {
+    // If it's a plain date "2026-03-02" — return as-is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    // If it's a full ISO timestamp, parse and convert to local date
+    const d = new Date(v);
+    if (!isNaN(d)) {
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth()+1).padStart(2,'0');
+      const dy = String(d.getDate()).padStart(2,'0');
+      return `${yr}-${mo}-${dy}`;
+    }
+    return v.slice(0,10);
+  }
+  if (v instanceof Date) {
+    const yr = v.getFullYear();
+    const mo = String(v.getMonth()+1).padStart(2,'0');
+    const dy = String(v.getDate()).padStart(2,'0');
+    return `${yr}-${mo}-${dy}`;
+  }
+  return String(v).slice(0,10);
 }
 
 function getWeekDates(monday) {
@@ -425,15 +446,44 @@ function ContractRatesTab({data,call,busy}) {
   const cfg = data.config||{};
   const [maleWage,setMaleWage] = useState(cfg.contractMaleWage||'');
   const [femaleWage,setFemaleWage] = useState(cfg.contractFemaleWage||'');
-  useEffect(()=>{setMaleWage(cfg.contractMaleWage||'');setFemaleWage(cfg.contractFemaleWage||'');},[cfg.contractMaleWage,cfg.contractFemaleWage]);
-  const save = async() => { await call('saveConfig',{contractMaleWage:maleWage,contractFemaleWage:femaleWage}); };
-  return <div className="card"><div className="card-header"><div className="card-title">Contract Labour Daily Rates</div></div>
-    <div className="card-body">
-      <div className="form-row form-row-2">
-        <div className="form-group"><label className="form-label">Male Daily Wage (₹)</label><input className="form-input" type="number" value={maleWage} onChange={e=>setMaleWage(e.target.value)}/></div>
-        <div className="form-group"><label className="form-label">Female Daily Wage (₹)</label><input className="form-input" type="number" value={femaleWage} onChange={e=>setFemaleWage(e.target.value)}/></div>
+  const [upiAcct,setUpiAcct] = useState(cfg.upiAccountLast4||'');
+  const [mgKey,setMgKey] = useState(cfg.mailgunSigningKey||'');
+  useEffect(()=>{
+    setMaleWage(cfg.contractMaleWage||'');
+    setFemaleWage(cfg.contractFemaleWage||'');
+    setUpiAcct(cfg.upiAccountLast4||'');
+    setMgKey(cfg.mailgunSigningKey||'');
+  },[cfg.contractMaleWage,cfg.contractFemaleWage,cfg.upiAccountLast4,cfg.mailgunSigningKey]);
+  const save = async() => { await call('saveConfig',{contractMaleWage:maleWage,contractFemaleWage:femaleWage,upiAccountLast4:upiAcct,mailgunSigningKey:mgKey}); };
+  return <div>
+    <div className="card"><div className="card-header"><div className="card-title">Contract Labour Daily Rates</div></div>
+      <div className="card-body">
+        <div className="form-row form-row-2">
+          <div className="form-group"><label className="form-label">Male Daily Wage (₹)</label><input className="form-input" type="number" value={maleWage} onChange={e=>setMaleWage(e.target.value)}/></div>
+          <div className="form-group"><label className="form-label">Female Daily Wage (₹)</label><input className="form-input" type="number" value={femaleWage} onChange={e=>setFemaleWage(e.target.value)}/></div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy?<Spinner/>:null}Save Rates</button>
       </div>
-      <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy?<Spinner/>:null}Save Rates</button>
+    </div>
+    <div className="card"><div className="card-header"><div className="card-title">UPI Payment Matching</div></div>
+      <div className="card-body">
+        <p style={{fontSize:12,color:'var(--gray-600)',marginBottom:12}}>
+          Used to automatically detect and match UPI payment confirmations from HDFC Bank emails.
+        </p>
+        <div className="form-row form-row-2">
+          <div className="form-group">
+            <label className="form-label">Bank Account Last 4 Digits</label>
+            <input className="form-input" value={upiAcct} maxLength={4} placeholder="e.g. 0580"
+              onChange={e=>setUpiAcct(e.target.value.replace(/\D/g,'').slice(0,4))}/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Mailgun Webhook Signing Key</label>
+            <input className="form-input" type="password" value={mgKey} placeholder="From Mailgun → Settings → API Keys"
+              onChange={e=>setMgKey(e.target.value)}/>
+          </div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!upiAcct||!mgKey}>{busy?<Spinner/>:null}Save</button>
+      </div>
     </div>
   </div>;
 }
@@ -500,13 +550,13 @@ function ExpenseTypesTab({data,call,busy}) {
 }
 
 function UsersTab({data,call,busy,auth}) {
-  const [form,setForm] = useState({email:'',name:'',password:'',isAdmin:false});
+  const [form,setForm] = useState({email:'',name:'',password:'',isAdmin:false,paymentApprover:false});
   const [confirm,setConfirm] = useState(null);
   const users = data.users||[];
   const save = async() => {
     if(!form.email||!form.name||!form.password) return;
-    await call('saveUser',{...form,isAdmin:form.isAdmin});
-    setForm({email:'',name:'',password:'',isAdmin:false});
+    await call('saveUser',{...form,isAdmin:form.isAdmin,paymentApprover:form.paymentApprover});
+    setForm({email:'',name:'',password:'',isAdmin:false,paymentApprover:false});
   };
   return <div>
     <div className="card"><div className="card-header"><div className="card-title">Add / Update User</div></div>
@@ -515,18 +565,20 @@ function UsersTab({data,call,busy,auth}) {
           <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/></div>
           <div className="form-group"><label className="form-label">Name</label><input className="form-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/></div>
           <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/></div>
-          <div className="form-group" style={{display:'flex',alignItems:'flex-end',paddingBottom:4}}>
+          <div className="form-group" style={{display:'flex',flexDirection:'column',gap:8,justifyContent:'flex-end',paddingBottom:4}}>
             <label className="form-check"><input type="checkbox" checked={form.isAdmin} onChange={e=>setForm(f=>({...f,isAdmin:e.target.checked}))}/> Admin user</label>
+            <label className="form-check"><input type="checkbox" checked={form.paymentApprover} onChange={e=>setForm(f=>({...f,paymentApprover:e.target.checked}))}/> Payment approver</label>
           </div>
         </div>
         <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.email||!form.name||!form.password}>{busy?<Spinner/>:null}Save User</button>
       </div>
     </div>
     <div className="card"><div className="card-body" style={{padding:0}}>
-      <div className="table-wrap"><table className="dt"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th></th></tr></thead>
+      <div className="table-wrap"><table className="dt"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Payment Approver</th><th></th></tr></thead>
         <tbody>{users.map(u=><tr key={u.email}>
           <td>{u.email}</td><td>{u.name}</td>
           <td>{u.isAdmin===true||String(u.isAdmin).toUpperCase()==='TRUE'?<span className="badge badge-gold">Admin</span>:<span className="badge badge-gray">User</span>}</td>
+          <td>{u.paymentApprover===true||String(u.paymentApprover).toUpperCase()==='TRUE'?<span className="badge badge-green">✓ Yes</span>:<span style={{fontSize:12,color:'var(--gray-400)'}}>—</span>}</td>
           <td style={{textAlign:'right'}}>{u.email!==auth.email&&u.email!=='jawadayaz@gmail.com'&&<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(u.email)}>Del</button>}</td>
         </tr>)}</tbody>
       </table></div>
@@ -546,6 +598,8 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   const [editing,setEditing] = useState(true);
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
+  const [confirmDel,setConfirmDel] = useState(null);
+  const [expandedWage,setExpandedWage] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),5000);};
 
   const weekDates = useMemo(()=>getWeekDates(weekStart),[weekStart]);
@@ -569,9 +623,17 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     contractFemale:'', contractFemaleSubType:''
   }));
 
+  // GAS may return employee keys as numbers — normalize to strings so totals lookup works
+  const normDays = days => days.map(day=>({
+    ...day,
+    employees: Object.fromEntries(
+      Object.entries(day.employees||{}).map(([k,v])=>[String(k), v])
+    )
+  }));
+
   const [entries,setEntries] = useState(()=>{
     const saved = existingPayroll?.data?.days;
-    return saved && saved.length ? saved : makeEmpty();
+    return (saved && saved.length) ? normDays(saved) : makeEmpty();
   });
 
   // Reload when week changes OR when payroll data updates (e.g. after save refreshes data)
@@ -579,7 +641,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   useEffect(()=>{
     const ep = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
     if(ep?.data?.days && ep.data.days.length) {
-      setEntries(ep.data.days);
+      setEntries(normDays(ep.data.days));
       setEditing(false);
     } else {
       setEntries(weekDates.map(()=>({
@@ -691,13 +753,22 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
             value={weekStart}
             onChange={e=>handleWeekChange(e.target.value)}
           />
+          {!isPending&&!isPaid&&isSaved&&!editing&&
+            <button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}>✏️ Edit</button>}
+          {!isPending&&!isPaid&&editing&&
+            <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
+              {busy?<><Spinner/>&nbsp;</>:null}💾 Save Payroll
+            </button>}
         </div>
       </div>
-      {isPending&&<div style={{padding:'7px 16px',background:'#fff8e1',fontSize:12,color:'#7a5b00',borderTop:'1px solid #fdd835'}}>
-        ⏳ Payment request submitted — editing locked until marked as paid.
+      {isPending&&<div style={{padding:'10px 16px',background:'#fff8e1',fontSize:13,color:'#7a5b00',borderTop:'1px solid #fdd835',display:'flex',alignItems:'center',gap:8}}>
+        ⏳ <b>Payment request already submitted</b> — entries are locked. The manager must mark it as paid before you can edit.
       </div>}
-      {isPaid&&<div style={{padding:'7px 16px',background:'#e8f5e9',fontSize:12,color:'#1a5c1a',borderTop:'1px solid #a5d6a7'}}>
-        ✅ This week is paid and closed.
+      {isPaid&&<div style={{padding:'10px 16px',background:'#e8f5e9',fontSize:13,color:'#1a5c1a',borderTop:'1px solid #a5d6a7',display:'flex',alignItems:'center',gap:8}}>
+        ✅ <b>Payment confirmed and closed</b> — this week's payroll cannot be edited.
+      </div>}
+      {isSaved&&!editing&&!isPending&&!isPaid&&<div style={{padding:'10px 16px',background:'#e3f0ff',fontSize:13,color:'#1a3a6b',borderTop:'1px solid #90bfff',display:'flex',alignItems:'center',gap:8}}>
+        🔒 <b>Payroll saved.</b> Click <b>✏️ Edit</b> in the summary below to make changes.
       </div>}
     </div>
 
@@ -830,49 +901,99 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
       </div>
     </div>
 
-    {/* Summary + action card — always visible */}
+    {/* All saved payroll weeks — expandable table */}
     <div className="card" style={{marginTop:12}}>
-      <div className="card-header">
-        <div className="card-title">Week Summary</div>
-        <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          {isPending&&<span className="badge badge-gold">⏳ Payment Requested</span>}
-          {isPaid&&<span className="badge badge-green">✅ Paid</span>}
-          {!isPending&&!isPaid&&isSaved&&!editing&&
-            <button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}>✏️ Edit</button>}
-          {!isPending&&!isPaid&&editing&&
-            <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
-              {busy?<><Spinner/>&nbsp;</>:null}💾 Save Payroll
-            </button>}
-        </div>
-      </div>
-      <div className="card-body">
-        {totals.totalWages===0
-          ? <div style={{color:'var(--gray-500)',fontSize:13,textAlign:'center',padding:'8px 0'}}>Mark attendance above — summary will appear here.</div>
-          : <div className="summary-grid" style={{marginBottom:0}}>
-              {employees.filter(e=>(totals.empTotals[e.id]?.days||0)>0||(totals.empTotals[e.id]?.otHours||0)>0)
-                .map(e=><div key={e.id} className="summary-card">
-                  <div className="label">{e.name}</div>
-                  <div className="value" style={{fontSize:16}}>{fmt(totals.empTotals[e.id].amount)}</div>
-                  <div className="sub">{totals.empTotals[e.id].days}d · {totals.empTotals[e.id].otHours||0}h OT</div>
-                </div>)}
-              {totals.contractMale.days>0&&<div className="summary-card">
-                <div className="label">Contract Male</div>
-                <div className="value" style={{fontSize:16}}>{fmt(totals.contractMale.amount)}</div>
-                <div className="sub">{totals.contractMale.days} worker-days</div>
-              </div>}
-              {totals.contractFemale.days>0&&<div className="summary-card">
-                <div className="label">Contract Female</div>
-                <div className="value" style={{fontSize:16}}>{fmt(totals.contractFemale.amount)}</div>
-                <div className="sub">{totals.contractFemale.days} worker-days</div>
-              </div>}
-              <div className="summary-card" style={{background:'var(--green-dark)'}}>
-                <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Total Wages</div>
-                <div className="value" style={{color:'var(--gold-light)',fontSize:18}}>{fmt(totals.totalWages)}</div>
-              </div>
-            </div>
+      <div className="card-body" style={{padding:0}}>
+        {(data.payroll||[]).length===0
+          ? <div className="empty">No payroll saved yet</div>
+          : <div className="table-wrap"><table className="dt">
+              <thead><tr>
+                <th style={{width:32}}></th>
+                <th>Week</th>
+                <th style={{textAlign:'right'}}>Total Wages</th>
+                <th>Status</th>
+                <th></th>
+              </tr></thead>
+              <tbody>
+                {[...(data.payroll||[])].sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1).map(pr=>{
+                  const ws=toDateStr(pr.weekStart);
+                  const isThisWeek=ws===weekStart;
+                  const isExpanded=expandedWage===ws;
+                  const wd=(()=>{const r=pr.data;if(!r)return null;if(typeof r==='string'){try{return JSON.parse(r);}catch{return null;}}return r;})();
+                  const emps=(wd?.employees||[]).filter(e=>parseFloat(e.days||0)>0||parseFloat(e.otHours||0)>0);
+                  const mDays=parseFloat(wd?.contractMale?.days||0);
+                  const fDays=parseFloat(wd?.contractFemale?.days||0);
+                  return <React.Fragment key={ws}>
+                    <tr style={{background:isThisWeek?'var(--green-pale)':''}}>
+                      <td style={{padding:'4px 6px',textAlign:'center'}}>
+                        <button className="btn btn-ghost btn-xs" style={{padding:'2px 5px'}} onClick={()=>setExpandedWage(isExpanded?null:ws)}>{isExpanded?'▲':'▼'}</button>
+                      </td>
+                      <td style={{whiteSpace:'nowrap',fontWeight:isThisWeek?700:400}}>
+                        {fmtDate(ws)}
+                        <div style={{fontSize:10,color:'var(--gray-500)'}}>{ws} → {getWeekDates(ws)[6]}</div>
+                      </td>
+                      <td style={{textAlign:'right',fontWeight:600}}>{fmt(pr.totalWages)}</td>
+                      <td>
+                        {pr.status==='pending'&&<span className="badge badge-gold">⏳ Pending</span>}
+                        {pr.status==='paid'&&<span className="badge badge-green">✅ Paid</span>}
+                        {pr.status==='draft'&&<span className="badge badge-gray">Draft</span>}
+                      </td>
+                      <td style={{textAlign:'right',whiteSpace:'nowrap'}}>
+                        {pr.status==='draft'&&<>
+                          <button className="btn btn-ghost btn-xs" onClick={()=>{setWeekStart(ws);window.scrollTo(0,0);}}>✏️ Edit</button>
+                          {' '}<button className="btn btn-danger btn-xs" onClick={()=>setConfirmDel(ws)}>Del</button>
+                        </>}
+                      </td>
+                    </tr>
+                    {isExpanded&&<tr>
+                      <td colSpan={5} style={{padding:0,background:'var(--gray-50)'}}>
+                        <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+                          <thead><tr style={{background:'var(--gray-200)'}}>
+                            <th style={{padding:'6px 12px',textAlign:'left',fontWeight:600,color:'var(--gray-700)'}}>Employee / Labour</th>
+                            <th style={{padding:'6px 12px',textAlign:'center',fontWeight:600,color:'var(--gray-700)'}}>Days</th>
+                            <th style={{padding:'6px 12px',textAlign:'center',fontWeight:600,color:'var(--gray-700)'}}>OT Hrs</th>
+                            <th style={{padding:'6px 12px',textAlign:'right',fontWeight:600,color:'var(--gray-700)'}}>Amount</th>
+                          </tr></thead>
+                          <tbody>
+                            {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}>
+                              <td style={{padding:'5px 12px'}}>{e.name}</td>
+                              <td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}</td>
+                              <td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td>
+                              <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td>
+                            </tr>)}
+                            {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
+                              <td style={{padding:'5px 12px'}}>Contract Male</td>
+                              <td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}</td>
+                              <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
+                              <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td>
+                            </tr>}
+                            {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
+                              <td style={{padding:'5px 12px'}}>Contract Female</td>
+                              <td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}</td>
+                              <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
+                              <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td>
+                            </tr>}
+                            <tr style={{background:'var(--green-pale)'}}>
+                              <td colSpan={3} style={{padding:'6px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
+                              <td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(pr.totalWages)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>}
+                  </React.Fragment>;
+                })}
+              </tbody>
+            </table></div>
         }
       </div>
     </div>
+    {confirmDel&&<Confirm msg="Delete this payroll entry?" onOk={async()=>{
+      setBusy(true);
+      try{const r=await apiGet(gasUrl,{action:'deletePayroll',...auth,weekStart:confirmDel});if(r.ok){await onRefresh();N('Deleted');}else throw new Error(r.error);}
+      catch(e){N(e.message,'error');}
+      setBusy(false);setConfirmDel(null);
+    }} onCancel={()=>setConfirmDel(null)}/>}
   </div>;
 }
 // ── Other Expenses Tab ────────────────────────────────────
@@ -884,6 +1005,9 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
   const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),3500);};
   const expenseTypes = data.expenseTypes||[];
   const expenses = data.otherExpenses||[];
+
+  // Look up payroll status for a given weekStart
+  const weekStatus = ws => (data.payroll||[]).find(p=>toDateStr(p.weekStart)===ws)?.status||'draft';
 
   const save = async() => {
     if(!form.type||!form.amount) return;
@@ -928,13 +1052,28 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
     <div className="card"><div className="card-body" style={{padding:0}}>
       {expenses.length===0?<div className="empty">No expenses yet</div>:
       <div className="table-wrap"><table className="dt">
-        <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th><th></th></tr></thead>
-        <tbody>{[...expenses].sort((a,b)=>b.date>a.date?1:-1).map(e=><tr key={e.id}>
-          <td style={{whiteSpace:'nowrap'}}>{fmtDate(e.date)}</td>
-          <td>{e.type}</td><td style={{color:'var(--gray-600)',fontSize:12}}>{e.note}</td>
-          <td style={{textAlign:'right',fontWeight:600}}>{fmt(e.amount)}</td>
-          <td><button className="btn btn-danger btn-xs" onClick={()=>setConfirm(e.id)}>Del</button></td>
-        </tr>)}</tbody>
+        <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th><th>Status</th><th></th></tr></thead>
+        <tbody>{[...expenses].sort((a,b)=>b.date>a.date?1:-1).map(e=>{
+          const ws=toDateStr(getMondayOf(e.date||e.weekStart));
+          const st=weekStatus(ws);
+          return <tr key={e.id}>
+            <td style={{whiteSpace:'nowrap'}}>{fmtDate(e.date)}</td>
+            <td>{e.type}</td>
+            <td style={{color:'var(--gray-600)',fontSize:12}}>{e.note}</td>
+            <td style={{textAlign:'right',fontWeight:600}}>{fmt(e.amount)}</td>
+            <td>
+              {st==='pending'&&<span className="badge badge-gold">⏳ Pending</span>}
+              {st==='paid'&&<span className="badge badge-green">✅ Paid</span>}
+              {st==='draft'&&<span className="badge badge-gray">Draft</span>}
+            </td>
+            <td style={{textAlign:'right',whiteSpace:'nowrap'}}>
+              {st==='draft'&&<>
+                <button className="btn btn-ghost btn-xs" onClick={()=>setForm({type:e.type,amount:e.amount,note:e.note||'',date:e.date||new Date().toISOString().split('T')[0]})}>✏️ Edit</button>
+                {' '}<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(e.id)}>Del</button>
+              </>}
+            </td>
+          </tr>;
+        })}</tbody>
       </table></div>}
     </div></div>
     {confirm&&<Confirm msg="Delete this expense?" onOk={()=>del(confirm)} onCancel={()=>setConfirm(null)}/>}
@@ -943,250 +1082,156 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
 
 // ── Payment Request Tab ───────────────────────────────────
 function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
-  const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
-  const [busy,setBusy] = useState(false);
+  const allPayroll  = data.payroll||[];
+  const allOtherExp = data.otherExpenses||[];
+  const [busy,setBusy] = useState(null);
   const [msg,setMsg] = useState(null);
+  const [confirm,setConfirm] = useState(null);
+  const [expandedPR,setExpandedPR] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),4000);};
 
-  const allPayroll      = data.payroll||[];
-  const allOtherExp     = data.otherExpenses||[];
-
-  // Derive from data directly — always reflects latest after refresh
-  const payroll       = useMemo(()=>allPayroll.find(p=>toDateStr(p.weekStart)===weekStart)||null, [data.payroll, weekStart]);
-  const otherExpenses = useMemo(()=>allOtherExp.filter(e=>toDateStr(e.weekStart)===weekStart),    [data.otherExpenses, weekStart]);
-
-  // Parse wage data from the saved payroll record
-  // Re-derive directly from allPayroll+weekStart so it always reflects latest data
-  const wageData = useMemo(()=>{
-    const pr = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
-    if(!pr) return null;
-    const raw = pr.data;
-    if(!raw) return null;
-    if(typeof raw === 'string') { try { return JSON.parse(raw); } catch{ return null; } }
-    if(typeof raw === 'object' && !Array.isArray(raw)) return raw;
-    return null;
-  },[data.payroll, weekStart]);
-
-  const totalWages  = parseFloat(payroll?.totalWages||0);
-  const totalOther  = otherExpenses.reduce((s,e)=>s+parseFloat(e.amount||0),0);
-  const grandTotal  = totalWages + totalOther;
-  const status      = payroll?.status||null;
-
-  // All weeks with pending status (shown at bottom)
-  const pendingList = allPayroll
-    .filter(p=>p.status==='pending')
-    .sort((a,b)=>b.weekStart>a.weekStart?1:-1);
-
-  const submit = async()=>{
-    if(!payroll){N('No payroll saved for this week yet — save wages first.','error');return;}
-    if(status==='pending'){N('Already submitted — awaiting payment confirmation.','warn');return;}
-    if(status==='paid'){N('This week is already paid.','warn');return;}
-    setBusy(true);
+  const submit = async(pr)=>{
+    const ws=toDateStr(pr.weekStart);
+    setBusy(ws);
     try {
-      const payload={
-        weekStart,
-        data:{
-          ...(wageData||{}),
-          otherExpenses:otherExpenses.map(e=>({type:e.type,amount:e.amount,note:e.note}))
-        },
-        totalWages,
-        totalOther,
-      };
-      const r=await apiGet(gasUrl,{action:'submitPaymentRequest',...auth,payload:JSON.stringify(payload)});
-      if(r.ok){await onRefresh();N('✅ Payment request sent — email dispatched!');}
+      const wd=(()=>{const r=pr.data;if(!r)return null;if(typeof r==="string"){try{return JSON.parse(r);}catch{return null;}}return r;})();
+      const oe=allOtherExp.filter(e=>toDateStr(e.weekStart)===ws);
+      const totalOther=oe.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+      const payload={weekStart:ws,data:{...(wd||{}),otherExpenses:oe.map(e=>({type:e.type,amount:e.amount,note:e.note}))},totalWages:parseFloat(pr.totalWages||0),totalOther};
+      const r=await apiGet(gasUrl,{action:"submitPaymentRequest",...auth,payload:JSON.stringify(payload)});
+      if(r.ok){await onRefresh();N("Payment request sent!");}
       else throw new Error(r.error);
-    }catch(e){N(e.message,'error');}
-    setBusy(false);
+    }catch(e){N(e.message,"error");}
+    setBusy(null);
   };
 
-  const empRows = wageData?.employees?.filter(e=>parseFloat(e.days||0)>0||parseFloat(e.otHours||0)>0)||[];
-  const hasMale   = parseFloat(wageData?.contractMale?.days||0)>0;
-  const hasFemale = parseFloat(wageData?.contractFemale?.days||0)>0;
+  const del = async(ws)=>{
+    setBusy(ws);
+    try {
+      const r=await apiGet(gasUrl,{action:"deletePayroll",...auth,weekStart:ws});
+      if(r.ok){await onRefresh();N("Deleted");}
+      else throw new Error(r.error);
+    }catch(e){N(e.message,"error");}
+    setBusy(null);setConfirm(null);
+  };
+
+  const sorted=[...allPayroll].sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1);
 
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
-
-    {/* Week selector */}
-    <div className="flex-between" style={{marginBottom:12}}>
-      <div style={{fontWeight:600,fontSize:14,color:'var(--green-dark)'}}>Select Week</div>
-      <input type="date" className="form-input" style={{width:160}}
-        value={weekStart}
-        onChange={e=>setWeekStart(getMondayOf(e.target.value))}/>
-    </div>
-
-    {/* DEBUG PANEL — remove once working */}
-    <div style={{background:'#1a1a2e',color:'#00ff88',fontFamily:'monospace',fontSize:11,padding:10,borderRadius:6,marginBottom:10,overflowX:'auto'}}>
-      <div>weekStart (looking for): <b style={{color:'#ffd700'}}>{weekStart}</b></div>
-      <div>allPayroll count: <b style={{color:'#ffd700'}}>{allPayroll.length}</b></div>
-      <div>payroll found: <b style={{color:'#ffd700'}}>{payroll?'YES':'NO'}</b></div>
-      <div>wageData: <b style={{color:'#ffd700'}}>{wageData?'has data':'null'}</b></div>
-      <div>otherExpenses count: <b style={{color:'#ffd700'}}>{otherExpenses.length}</b></div>
-      {allPayroll.slice(0,5).map((p,i)=><div key={i} style={{color:'#aaa'}}>
-        payroll[{i}]: weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(p.weekStart)}</b> status={p.status} toDateStr={toDateStr(p.weekStart)}
-      </div>)}
-      {allOtherExp.slice(0,3).map((e,i)=><div key={i} style={{color:'#aaa'}}>
-        expense[{i}]: weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(e.weekStart)}</b> toDateStr={toDateStr(e.weekStart)}
-      </div>)}
-    </div>
-
-    {/* DEBUG — screenshot this and share */}
-    <div style={{background:'#0d1117',color:'#58ff8a',fontFamily:'monospace',fontSize:11,padding:12,borderRadius:6,marginBottom:12,lineHeight:1.7}}>
-      <div>📅 weekStart state: <b style={{color:'#ffd700'}}>{weekStart}</b></div>
-      <div>📦 data.payroll length: <b style={{color:'#ffd700'}}>{(data.payroll||[]).length}</b></div>
-      <div>🔍 payroll found: <b style={{color:payroll?'#58ff8a':'#ff5555'}}>{payroll ? 'YES ✓' : 'NO ✗'}</b></div>
-      <div>💰 wageData: <b style={{color:wageData?'#58ff8a':'#ff5555'}}>{wageData ? 'has data ✓' : 'null ✗'}</b></div>
-      <div>🧾 otherExpenses this week: <b style={{color:'#ffd700'}}>{otherExpenses.length}</b></div>
-      <div style={{marginTop:6,color:'#aaa'}}>— all payroll rows —</div>
-      {(data.payroll||[]).map((p,i)=>(
-        <div key={i} style={{color: toDateStr(p.weekStart)===weekStart?'#58ff8a':'#888'}}>
-          [{i}] weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(p.weekStart)}</b>
-          {' '}→ toDateStr=<b style={{color:'#ff9f43'}}>{toDateStr(p.weekStart)}</b>
-          {' '}status={p.status}
-          {' '}match={String(toDateStr(p.weekStart)===weekStart)}
-        </div>
-      ))}
-      <div style={{marginTop:6,color:'#aaa'}}>— all otherExpenses rows —</div>
-      {(data.otherExpenses||[]).slice(0,5).map((e,i)=>(
-        <div key={i} style={{color:'#888'}}>
-          [{i}] weekStart=<b style={{color:'#ff9f43'}}>{JSON.stringify(e.weekStart)}</b>
-          {' '}→ toDateStr=<b style={{color:'#ff9f43'}}>{toDateStr(e.weekStart)}</b>
-        </div>
-      ))}
-    </div>
-
-    {!payroll&&<Alert type="info" msg="No payroll saved for this week. Go to Wages tab, enter data and Save."/>}
-    {status==='pending'&&<Alert type="warn" msg="⏳ Payment request submitted — awaiting confirmation."/>}
-    {status==='paid'&&<Alert type="success" msg="✅ Payment confirmed and closed for this week."/>}
-
-    {/* Summary totals */}
-    <div className="summary-grid">
-      <div className="summary-card">
-        <div className="label">Total Wages</div>
-        <div className="value">{fmt(totalWages)}</div>
-        <div className="sub">Named + Contract</div>
-      </div>
-      <div className="summary-card gold">
-        <div className="label">Other Expenses</div>
-        <div className="value">{fmt(totalOther)}</div>
-        <div className="sub">{otherExpenses.length} item{otherExpenses.length!==1?'s':''}</div>
-      </div>
-      <div className="summary-card" style={{background:'var(--green-dark)'}}>
-        <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Grand Total</div>
-        <div className="value" style={{color:'var(--gold-light)'}}>{fmt(grandTotal)}</div>
-        <div className="sub" style={{color:'rgba(255,255,255,.4)'}}>Due this week</div>
-      </div>
-    </div>
-
-    {/* Wage breakdown — show whenever payroll is saved */}
-    {payroll&&<div className="card">
-      <div className="card-header">
-        <div className="card-title">Wage Breakdown</div>
-        <span className="badge badge-gray fs-11">Week of {fmtDate(weekStart)}</span>
-      </div>
-      <div className="card-body" style={{padding:0}}>
-        {(empRows.length===0&&!hasMale&&!hasFemale)
-          ? <div className="empty">No wage entries for this week</div>
-          : <div className="table-wrap"><table className="dt">
-              <thead><tr>
-                <th>Employee / Labour</th>
-                <th style={{textAlign:'center'}}>Days</th>
-                <th style={{textAlign:'center'}}>OT Hrs</th>
-                <th style={{textAlign:'right'}}>Amount</th>
-              </tr></thead>
-              <tbody>
-                {empRows.map((e,i)=><tr key={i}>
-                  <td className="fw-600">{e.name}</td>
-                  <td style={{textAlign:'center'}}>{e.days}</td>
-                  <td style={{textAlign:'center'}}>{e.otHours||0}</td>
-                  <td style={{textAlign:'right'}}>{fmt(e.amount)}</td>
-                </tr>)}
-                {hasMale&&<tr style={{background:'var(--gold-pale)'}}>
-                  <td>Contract Male</td>
-                  <td style={{textAlign:'center'}}>{wageData.contractMale.days}</td>
-                  <td style={{textAlign:'center'}}>—</td>
-                  <td style={{textAlign:'right'}}>{fmt(wageData.contractMale.amount)}</td>
-                </tr>}
-                {hasFemale&&<tr style={{background:'var(--gold-pale)'}}>
-                  <td>Contract Female</td>
-                  <td style={{textAlign:'center'}}>{wageData.contractFemale.days}</td>
-                  <td style={{textAlign:'center'}}>—</td>
-                  <td style={{textAlign:'right'}}>{fmt(wageData.contractFemale.amount)}</td>
-                </tr>}
-                <tr style={{background:'var(--green-pale)'}}>
-                  <td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
-                  <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td>
-                </tr>
-              </tbody>
-            </table></div>
-        }
-      </div>
-    </div>}
-
-    {/* Other expenses */}
-    {otherExpenses.length>0&&<div className="card">
-      <div className="card-header"><div className="card-title">Other Expenses This Week</div></div>
-      <div className="card-body" style={{padding:0}}>
-        <div className="table-wrap"><table className="dt">
-          <thead><tr><th>Date</th><th>Type</th><th>Note</th><th style={{textAlign:'right'}}>Amount</th></tr></thead>
-          <tbody>
-            {otherExpenses.map(e=><tr key={e.id}>
-              <td>{fmtDate(e.date)}</td>
-              <td>{e.type}</td>
-              <td style={{fontSize:12,color:'var(--gray-600)'}}>{e.note}</td>
-              <td style={{textAlign:'right'}}>{fmt(e.amount)}</td>
-            </tr>)}
-            <tr style={{background:'var(--green-pale)'}}>
-              <td colSpan={3} style={{fontWeight:600,color:'var(--green-dark)'}}>Total Other</td>
-              <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalOther)}</td>
-            </tr>
-          </tbody>
-        </table></div>
-      </div>
-    </div>}
-
-    {/* Submit button */}
-    {payroll&&status!=='paid'&&status!=='pending'&&
-      <button className="btn btn-gold" onClick={submit} disabled={busy}
-        style={{width:'100%',justifyContent:'center',padding:'12px',marginBottom:16}}>
-        {busy?<><Spinner/>&nbsp;</>:null}📧 Submit Payment Request
-      </button>}
-
-    {/* Pending requests — always visible if any exist */}
-    {pendingList.length>0&&<div className="card">
-      <div className="card-header">
-        <div className="card-title">⏳ Pending Payment Requests</div>
-        <span className="badge badge-gold">{pendingList.length} pending</span>
-      </div>
-      <div className="card-body" style={{padding:0}}>
-        <div className="table-wrap"><table className="dt">
-          <thead><tr>
-            <th>Week of</th>
-            <th style={{textAlign:'right'}}>Wages</th>
-            <th style={{textAlign:'right'}}>Other</th>
-            <th style={{textAlign:'right'}}>Total</th>
-            <th>Submitted</th>
-          </tr></thead>
-          <tbody>
-            {pendingList.map(p=>{
-              const pOther=allOtherExp.filter(e=>toDateStr(e.weekStart)===toDateStr(p.weekStart))
-                .reduce((s,e)=>s+parseFloat(e.amount||0),0);
-              return <tr key={p.weekStart}>
-                <td style={{whiteSpace:'nowrap'}}>{fmtDate(toDateStr(p.weekStart))}</td>
-                <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
-                <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
-                <td style={{textAlign:'right',fontWeight:700,color:'var(--gold)'}}>
-                  {fmt(parseFloat(p.totalWages||0)+pOther)}
-                </td>
-                <td style={{fontSize:12,color:'var(--gray-600)'}}>{fmtDate(p.submittedAt)}</td>
-              </tr>;
-            })}
-          </tbody>
-        </table></div>
-      </div>
-    </div>}
+    <div className="card"><div className="card-body" style={{padding:0}}>
+      {sorted.length===0
+        ? <div className="empty">No payroll saved yet — go to Wages tab to enter data.</div>
+        : <div className="table-wrap"><table className="dt">
+            <thead><tr>
+              <th style={{width:32}}></th>
+              <th>Week</th>
+              <th style={{textAlign:"right"}}>Wages</th>
+              <th style={{textAlign:"right"}}>Other</th>
+              <th style={{textAlign:"right"}}>Total</th>
+              <th>Status</th>
+              <th></th>
+            </tr></thead>
+            <tbody>
+              {sorted.map(pr=>{
+                const ws=toDateStr(pr.weekStart);
+                const status=pr.status;
+                const wd=(()=>{const r=pr.data;if(!r)return null;if(typeof r==='string'){try{return JSON.parse(r);}catch{return null;}}return r;})();
+                const emps=(wd?.employees||[]).filter(e=>parseFloat(e.days||0)>0||parseFloat(e.otHours||0)>0);
+                const mDays=parseFloat(wd?.contractMale?.days||0);
+                const fDays=parseFloat(wd?.contractFemale?.days||0);
+                const oe=allOtherExp.filter(e=>toDateStr(e.weekStart)===ws);
+                const totalWages=parseFloat(pr.totalWages||0);
+                const totalOther=oe.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+                const isSubmitting=busy===ws;
+                const isExpanded=expandedPR===ws;
+                return <React.Fragment key={ws}>
+                  <tr>
+                    <td style={{padding:'4px 6px',textAlign:'center'}}>
+                      <button className="btn btn-ghost btn-xs" style={{padding:'2px 5px'}} onClick={()=>setExpandedPR(isExpanded?null:ws)}>{isExpanded?'▲':'▼'}</button>
+                    </td>
+                    <td style={{whiteSpace:"nowrap"}}>
+                      {fmtDate(ws)}
+                      <div style={{fontSize:10,color:"var(--gray-500)"}}>{ws} to {getWeekDates(ws)[6]}</div>
+                    </td>
+                    <td style={{textAlign:"right"}}>{fmt(totalWages)}</td>
+                    <td style={{textAlign:"right"}}>{fmt(totalOther)}</td>
+                    <td style={{textAlign:"right",fontWeight:600}}>{fmt(totalWages+totalOther)}</td>
+                    <td>
+                      {status==="pending"&&<span className="badge badge-gold">⏳ Pending</span>}
+                      {status==="paid"&&<span className="badge badge-green">✅ Paid</span>}
+                      {status==="draft"&&<span className="badge badge-gray">Draft</span>}
+                    </td>
+                    <td style={{textAlign:"right",whiteSpace:"nowrap"}}>
+                      {status==="draft"&&<>
+                        <button className="btn btn-primary btn-xs" onClick={()=>submit(pr)} disabled={!!busy}>
+                          {isSubmitting?<Spinner/>:"Submit"}
+                        </button>
+                        {" "}<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(ws)} disabled={!!busy}>Del</button>
+                      </>}
+                      {status==="pending"&&<span style={{fontSize:11,color:"var(--gray-500)"}}>Awaiting payment</span>}
+                      {status==="paid"&&<span style={{fontSize:11,color:"var(--gray-500)"}}>Closed</span>}
+                    </td>
+                  </tr>
+                  {isExpanded&&<tr>
+                    <td colSpan={7} style={{padding:0,background:'var(--gray-50)'}}>
+                      <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+                        <thead><tr style={{background:'var(--gray-200)'}}>
+                          <th style={{padding:'6px 12px',textAlign:'left',fontWeight:600,color:'var(--gray-700)'}}>Item</th>
+                          <th style={{padding:'6px 12px',textAlign:'center',fontWeight:600,color:'var(--gray-700)'}}>Days / Note</th>
+                          <th style={{padding:'6px 12px',textAlign:'center',fontWeight:600,color:'var(--gray-700)'}}>OT Hrs</th>
+                          <th style={{padding:'6px 12px',textAlign:'right',fontWeight:600,color:'var(--gray-700)'}}>Amount</th>
+                        </tr></thead>
+                        <tbody>
+                          {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}>
+                            <td style={{padding:'5px 12px'}}>{e.name}</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}d</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td>
+                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td>
+                          </tr>)}
+                          {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
+                            <td style={{padding:'5px 12px'}}>Contract Male</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}d</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
+                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td>
+                          </tr>}
+                          {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
+                            <td style={{padding:'5px 12px'}}>Contract Female</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}d</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
+                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td>
+                          </tr>}
+                          {emps.length>0||mDays>0||fDays>0?<tr style={{borderBottom:'1px solid var(--gray-300)',background:'var(--green-pale)'}}>
+                            <td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
+                            <td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td>
+                          </tr>:null}
+                          {oe.map((e,i)=><tr key={'e'+i} style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
+                            <td style={{padding:'5px 12px'}}>{e.type}</td>
+                            <td style={{padding:'5px 12px',color:'var(--gray-600)'}}>{e.note||'—'}</td>
+                            <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
+                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td>
+                          </tr>)}
+                          {oe.length>0&&<tr style={{borderBottom:'1px solid var(--gray-300)',background:'#fff8e1'}}>
+                            <td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--gold)'}}>Total Other</td>
+                            <td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--gold)'}}>{fmt(totalOther)}</td>
+                          </tr>}
+                          <tr style={{background:'var(--green-dark)'}}>
+                            <td colSpan={3} style={{padding:'6px 12px',fontWeight:700,color:'#fff'}}>Grand Total</td>
+                            <td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--gold-light)'}}>{fmt(totalWages+totalOther)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>}
+                </React.Fragment>;
+              })}
+            </tbody>
+          </table></div>
+      }
+    </div></div>
+    {confirm&&<Confirm msg="Delete this payroll entry?" onOk={()=>del(confirm)} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-// ── Expenses Main Tab ─────────────────────────────────────
 function ExpensesTab({data,gasUrl,auth,onRefresh}) {
   const [tab,setTab] = useState('wages');
   return <div>
