@@ -148,9 +148,9 @@ table.dt tr:last-child td{border-bottom:none;}
 .total-cell{font-weight:700;color:var(--green-dark);text-align:right;padding-right:8px;}
 
 /* ── Tabs ── */
-.tabs{display:flex;gap:2px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;scrollbar-width:none;}
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:2px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%;}
 .tabs::-webkit-scrollbar{display:none;}
-.tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;}
 .tab.active{background:#fff;color:var(--green-dark);box-shadow:var(--shadow);}
 .tab:hover:not(.active){color:var(--green);}
 
