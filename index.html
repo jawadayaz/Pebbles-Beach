@@ -148,8 +148,7 @@ table.dt tr:last-child td{border-bottom:none;}
 .total-cell{font-weight:700;color:var(--green-dark);text-align:right;padding-right:8px;}
 
 /* ── Tabs ── */
-.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:max-content;gap:2px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;width:100%;}
-.tabs::-webkit-scrollbar{display:none;}
+.tabs{display:flex;gap:3px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;flex-wrap:wrap;width:fit-content;}
 .tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;}
 .tab.active{background:#fff;color:var(--green-dark);box-shadow:var(--shadow);}
 .tab:hover:not(.active){color:var(--green);}
@@ -1009,8 +1008,13 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
   // Look up payroll status for a given weekStart
   const weekStatus = ws => (data.payroll||[]).find(p=>toDateStr(p.weekStart)===ws)?.status||'draft';
 
+  const formWeekStart = toDateStr(getMondayOf(form.date));
+  const formWeekStatus = weekStatus(formWeekStart);
+  const formWeekLocked = formWeekStatus === 'pending' || formWeekStatus === 'paid';
+
   const save = async() => {
     if(!form.type||!form.amount) return;
+    if(formWeekLocked){N('This week is '+formWeekStatus+' — cannot add expenses','error');return;}
     setBusy(true);
     try {
       const r = await apiGet(gasUrl,{action:'saveOtherExpense',...auth,payload:JSON.stringify({...form,weekStart:getMondayOf(form.date)})});
@@ -1046,7 +1050,10 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
           <div className="form-group"><label className="form-label">Amount (₹)</label><input type="number" className="form-input" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))}/></div>
           <div className="form-group"><label className="form-label">Note (optional)</label><input className="form-input" value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} placeholder="Details…"/></div>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.type||!form.amount}>{busy?<Spinner/>:null}Add Expense</button>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.type||!form.amount||formWeekLocked}>{busy?<Spinner/>:null}Add Expense</button>
+        {formWeekLocked&&<div style={{marginTop:8,fontSize:12,color:'#7a5b00',background:'#fff8e1',padding:'6px 10px',borderRadius:5}}>
+          ⚠️ The week of {formWeekStart} is <b>{formWeekStatus}</b> — expenses cannot be added or changed.
+        </div>}
       </div>
     </div>
     <div className="card"><div className="card-body" style={{padding:0}}>
