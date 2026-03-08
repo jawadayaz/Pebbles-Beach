@@ -172,7 +172,7 @@ table.dt tr:last-child td{border-bottom:none;}
   .nav-item{flex:1;flex-direction:column;align-items:center;justify-content:center;padding:7px 2px calc(7px + env(safe-area-inset-bottom,0));font-size:9px;gap:2px;border-left:none!important;border-top:2px solid transparent;min-width:0;white-space:nowrap;}
   .nav-item.active{border-top-color:var(--gold-light);background:rgba(255,255,255,.08);}
   .nav-item .icon{font-size:20px;width:auto;line-height:1;}
-  .main{order:1;width:100%;min-width:0;flex:1;}
+  .main{order:1;width:100%;min-width:0;flex:1;padding-top:env(safe-area-inset-top,0);}
   .main-content{padding:14px 14px calc(72px + env(safe-area-inset-bottom,0));}
   .main-header{padding:12px 14px;}
   .form-row-2,.form-row-3{grid-template-columns:1fr;}
@@ -361,6 +361,7 @@ function LoginScreen({gasUrl,onLogin}) {
       <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px'}} onClick={doLogin} disabled={busy}>
         {busy ? <><Spinner/> Signing in…</> : 'Sign In'}
       </button>
+      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#aaa',letterSpacing:'.5px'}}></p>
     </div>
   </div>;
 }
@@ -1608,7 +1609,7 @@ function App() {
       <div className="sidebar-logo">
         <h1>🌿 Pebble's Beach</h1>
         <p>Estate Management</p>
-        <p style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:'2px',letterSpacing:'.5px'}}>v01.01</p>
+        <p style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:'2px',letterSpacing:'.5px'}}>v01.02</p>
       </div>
       <div className="sidebar-user">
         <div className="sidebar-user-icon">{user.name?user.name[0].toUpperCase():'U'}</div>
@@ -1634,7 +1635,10 @@ function App() {
           <h2>{pageHeaders[page]?.title}</h2>
           <p>{pageHeaders[page]?.sub}</p>
         </div>
-        <button className="btn btn-ghost btn-sm" onClick={()=>refresh()} title="Refresh data">↻ Sync</button>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:"10px",color:"var(--gray-500)",letterSpacing:".5px"}}>v01.01</span>
+          <button className="btn btn-ghost btn-sm" onClick={()=>refresh(gasUrl,authCreds?.email,authCreds?.password)} title="Refresh data">↻ Sync</button>
+        </div>
       </div>
       <div className="main-content">{PageComponent}</div>
     </main>
