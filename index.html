@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>Pebble's Beach</title>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -29,7 +29,7 @@
   --font-body:'DM Sans',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:var(--text);}
+html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;}
 #root{height:100%;display:flex;flex-direction:column;}
 
 /* ── Layout ── */
@@ -1608,6 +1608,7 @@ function App() {
       <div className="sidebar-logo">
         <h1>🌿 Pebble's Beach</h1>
         <p>Estate Management</p>
+        <p style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:'2px',letterSpacing:'.5px'}}>v01.01</p>
       </div>
       <div className="sidebar-user">
         <div className="sidebar-user-icon">{user.name?user.name[0].toUpperCase():'U'}</div>
