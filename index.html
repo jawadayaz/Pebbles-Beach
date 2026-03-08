@@ -277,9 +277,9 @@ function apiGet(url, params) {
     const cb = '_farm' + Date.now() + Math.random().toString(36).slice(2);
     const s = document.createElement('script'); let done = false;
     const clean = () => { if(done)return; done=true; clearTimeout(t); delete window[cb]; s.parentNode&&s.parentNode.removeChild(s); };
-    const t = setTimeout(() => { clean(); reject(new Error('Request timed out')); }, 15000);
+    const t = setTimeout(() => { clean(); reject(new Error('Request timed out — GAS took >15s. Check your internet or try again.')); }, 15000);
     window[cb] = d => { clean(); d&&d.error ? reject(new Error(d.error)) : resolve(d); };
-    s.onerror = () => { clean(); reject(new Error('Network error')); };
+    s.onerror = () => { clean(); reject(new Error('Network error — could not reach the server. Check your connection.')); };
     const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
     s.src = url + '?' + qs + '&callback=' + cb;
     document.head.appendChild(s);
@@ -361,7 +361,7 @@ function LoginScreen({gasUrl,onLogin}) {
       <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px'}} onClick={doLogin} disabled={busy}>
         {busy ? <><Spinner/> Signing in…</> : 'Sign In'}
       </button>
-      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#aaa',letterSpacing:'.5px'}}></p>
+      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>v04.05</p>
     </div>
   </div>;
 }
@@ -729,8 +729,8 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     try {
       const r=await apiGet(gasUrl,{action:'savePayroll',...auth,payload:JSON.stringify(buildPayload())});
       if(r.ok){await onRefresh();N('Payroll saved successfully!');setEditing(false);}
-      else throw new Error(r.error);
-    }catch(e){N(e.message,'error');}
+      else throw new Error(r.error||'Save failed — no response from server');
+    }catch(e){N('Save failed: '+e.message,'error');}
     setBusy(false);
   };
 
@@ -996,8 +996,8 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     </div>
     {confirmDel&&<Confirm msg="Delete this payroll entry?" onOk={async()=>{
       setBusy(true);
-      try{const r=await apiGet(gasUrl,{action:'deletePayroll',...auth,weekStart:confirmDel});if(r.ok){await onRefresh();N('Deleted');}else throw new Error(r.error);}
-      catch(e){N(e.message,'error');}
+      try{const r=await apiGet(gasUrl,{action:'deletePayroll',...auth,weekStart:confirmDel});if(r.ok){await onRefresh();N('Payroll deleted.');}else throw new Error(r.error||'Delete failed');}
+      catch(e){N('Delete failed: '+e.message,'error');}
       setBusy(false);setConfirmDel(null);
     }} onCancel={()=>setConfirmDel(null)}/>}
   </div>;
@@ -1026,8 +1026,8 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
     try {
       const r = await apiGet(gasUrl,{action:'saveOtherExpense',...auth,payload:JSON.stringify({...form,weekStart:getMondayOf(form.date)})});
       if(r.ok) { await onRefresh(); N('Expense saved!'); setForm(f=>({...f,type:'',amount:'',note:''})); }
-      else throw new Error(r.error);
-    } catch(e) { N(e.message,'error'); }
+      else throw new Error(r.error||'Save failed — no response from server');
+    } catch(e) { N('Save expense failed: '+e.message,'error'); }
     setBusy(false);
   };
 
@@ -1035,9 +1035,9 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
     setBusy(true);
     try {
       const r = await apiGet(gasUrl,{action:'deleteOtherExpense',...auth,id});
-      if(r.ok) { await onRefresh(); N('Deleted'); }
-      else throw new Error(r.error);
-    } catch(e) { N(e.message,'error'); }
+      if(r.ok) { await onRefresh(); N('Expense deleted.'); }
+      else throw new Error(r.error||'Delete failed');
+    } catch(e) { N('Delete expense failed: '+e.message,'error'); }
     setBusy(false); setConfirm(null);
   };
 
@@ -1113,9 +1113,9 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
       const totalOther=oe.reduce((s,e)=>s+parseFloat(e.amount||0),0);
       const payload={weekStart:ws,data:{...(wd||{}),otherExpenses:oe.map(e=>({type:e.type,amount:e.amount,note:e.note}))},totalWages:parseFloat(pr.totalWages||0),totalOther};
       const r=await apiGet(gasUrl,{action:"submitPaymentRequest",...auth,payload:JSON.stringify(payload)});
-      if(r.ok){await onRefresh();N("Payment request sent!");}
-      else throw new Error(r.error);
-    }catch(e){N(e.message,"error");}
+      if(r.ok){await onRefresh();N("Payment request submitted — email sent to approver.");}
+      else throw new Error(r.error||'Submit failed — no response from server');
+    }catch(e){N('Submit failed: '+e.message,"error");}
     setBusy(null);
   };
 
@@ -1123,9 +1123,9 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
     setBusy(ws);
     try {
       const r=await apiGet(gasUrl,{action:"deletePayroll",...auth,weekStart:ws});
-      if(r.ok){await onRefresh();N("Deleted");}
-      else throw new Error(r.error);
-    }catch(e){N(e.message,"error");}
+      if(r.ok){await onRefresh();N("Payment request deleted.");}
+      else throw new Error(r.error||'Delete failed');
+    }catch(e){N('Delete failed: '+e.message,"error");}
     setBusy(null);setConfirm(null);
   };
 
@@ -1276,8 +1276,8 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
     try {
       const r = await apiGet(gasUrl,{action:'saveIncome',...auth,payload:JSON.stringify(form)});
       if(r.ok) { await onRefresh(); N('Income saved!'); setForm(f=>({...f,amount:'',note:''})); }
-      else throw new Error(r.error);
-    } catch(e) { N(e.message,'error'); }
+      else throw new Error(r.error||'Save failed');
+    } catch(e) { N('Save income failed: '+e.message,'error'); }
     setBusy(false);
   };
 
@@ -1285,8 +1285,8 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
     setBusy(true);
     try {
       const r = await apiGet(gasUrl,{action:'deleteIncome',...auth,id});
-      if(r.ok) { await onRefresh(); N('Deleted'); }
-    } catch(e) { N(e.message,'error'); }
+      if(r.ok) { await onRefresh(); N('Income deleted.'); } else throw new Error(r.error||'Delete failed');
+    } catch(e) { N('Delete income failed: '+e.message,'error'); }
     setBusy(false); setConfirm(null);
   };
 
@@ -1573,7 +1573,8 @@ function App() {
     try {
       const r = await apiGet(u,{action:'getAll',email:e,password:p});
       if(r&&!r.error) { setData(r); localStorage.setItem(LS_DATA,JSON.stringify(r)); }
-    } catch{}
+      else if(r?.error) console.error('Sync error:',r.error);
+    } catch(err){ console.error('Sync failed:',err.message); }
   },[gasUrl,authCreds]);
 
   const logout = () => { localStorage.removeItem(LS_AUTH); setUser(null); setAuthCreds(null); setData({employees:[],config:{},workTypes:[],expenseTypes:[],payroll:[],otherExpenses:[],income:[],users:[]}); };
@@ -1609,7 +1610,7 @@ function App() {
       <div className="sidebar-logo">
         <h1>🌿 Pebble's Beach</h1>
         <p>Estate Management</p>
-        <p style={{fontSize:'9px',color:'rgba(255,255,255,.25)',marginTop:'2px',letterSpacing:'.5px'}}>v01.02</p>
+        <p style={{fontSize:'9px',color:'#f5c842',marginTop:'2px',letterSpacing:'.5px',fontWeight:600}}>v04.05</p>
       </div>
       <div className="sidebar-user">
         <div className="sidebar-user-icon">{user.name?user.name[0].toUpperCase():'U'}</div>
@@ -1636,7 +1637,7 @@ function App() {
           <p>{pageHeaders[page]?.sub}</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:"10px",color:"var(--gray-500)",letterSpacing:".5px"}}>v01.01</span>
+          <span style={{fontSize:"10px",color:"#f5c842",letterSpacing:".5px",fontWeight:600}}>v04.05</span>
           <button className="btn btn-ghost btn-sm" onClick={()=>refresh(gasUrl,authCreds?.email,authCreds?.password)} title="Refresh data">↻ Sync</button>
         </div>
       </div>
