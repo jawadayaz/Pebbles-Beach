@@ -33,8 +33,8 @@ html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:va
 #root{height:100%;display:flex;flex-direction:column;}
 
 /* ── Layout ── */
-.app{display:flex;height:100%;overflow:hidden;}
-.sidebar{width:220px;min-width:220px;background:var(--green-dark);display:flex;flex-direction:column;overflow:hidden;}
+.app{display:flex;min-height:100vh;}
+.sidebar{width:220px;background:var(--green-dark);flex-shrink:0;display:flex;flex-direction:column;}
 .sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1);}
 .sidebar-logo h1{font-family:var(--font-head);color:var(--gold-light);font-size:17px;line-height:1.2;}
 .sidebar-logo p{color:rgba(200,230,200,.6);font-size:10px;margin-top:2px;letter-spacing:.5px;text-transform:uppercase;}
@@ -50,18 +50,14 @@ html,body{height:100%;font-family:var(--font-body);background:var(--bg);color:va
 .nav-item.active{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--gold-light);font-weight:500;}
 .nav-item .icon{font-size:15px;width:20px;text-align:center;}
 .nav-logout{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);}
-.main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
 .main-header{padding:16px 24px;background:var(--card);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .main-header h2{font-family:var(--font-head);font-size:20px;color:var(--green-dark);}
 .main-header p{font-size:12px;color:var(--gray-600);margin-top:2px;}
-.main-content{flex:1;overflow-y:auto;padding:20px 24px;}
+.main-content{flex:1;padding:20px 24px;}
 
 /* ── Mobile Bottom Nav ── */
-.bottom-nav{display:none;background:var(--green-dark);padding:0;border-top:1px solid rgba(255,255,255,.1);}
-.bottom-nav-items{display:flex;}
-.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px 10px;cursor:pointer;color:rgba(255,255,255,.55);font-size:9px;gap:3px;transition:all .15s;border-top:2px solid transparent;}
-.bottom-nav-item.active{color:var(--gold-light);border-top-color:var(--gold-light);}
-.bottom-nav-item .icon{font-size:18px;}
+
 
 /* ── Cards ── */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;}
@@ -164,10 +160,20 @@ table.dt tr:last-child td{border-bottom:none;}
 .summary-card.blue .value{color:var(--blue);}
 
 /* ── Responsive ── */
+@media(min-width:769px){.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;}}
 @media(max-width:768px){
-  .sidebar{display:none;}
-  .bottom-nav{display:block;}
-  .main-content{padding:14px 14px 16px;}
+  .app{flex-direction:column;min-height:100vh;min-height:100dvh;}
+  .sidebar{order:2;width:100%;height:auto;position:fixed;bottom:0;left:0;right:0;top:auto;z-index:200;flex-direction:row;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0);box-shadow:0 -2px 12px rgba(0,0,0,.18);}
+  .sidebar-logo{display:none;}
+  .sidebar-user{display:none;}
+  .nav-section{display:none;}
+  .nav-logout{display:none;}
+  .sidebar-nav{display:flex;flex-direction:row;width:100%;padding:0;flex:1;}
+  .nav-item{flex:1;flex-direction:column;align-items:center;justify-content:center;padding:7px 2px calc(7px + env(safe-area-inset-bottom,0));font-size:9px;gap:2px;border-left:none!important;border-top:2px solid transparent;min-width:0;white-space:nowrap;}
+  .nav-item.active{border-top-color:var(--gold-light);background:rgba(255,255,255,.08);}
+  .nav-item .icon{font-size:20px;width:auto;line-height:1;}
+  .main{order:1;width:100%;min-width:0;flex:1;}
+  .main-content{padding:14px 14px calc(72px + env(safe-area-inset-bottom,0));}
   .main-header{padding:12px 14px;}
   .form-row-2,.form-row-3{grid-template-columns:1fr;}
   .week-table{font-size:11px;}
@@ -1632,14 +1638,7 @@ function App() {
       <div className="main-content">{PageComponent}</div>
     </main>
 
-    {/* Mobile bottom nav */}
-    <nav className="bottom-nav">
-      <div className="bottom-nav-items">
-        {visibleNav.map(n=><div key={n.id} className={'bottom-nav-item'+(page===n.id?' active':'')} onClick={()=>setPage(n.id)}>
-          <span className="icon">{n.icon}</span><span>{n.label}</span>
-        </div>)}
-      </div>
-    </nav>
+
   </div>;
 }
 
