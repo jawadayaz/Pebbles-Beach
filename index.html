@@ -31,8 +31,6 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;}
 #root{height:100%;display:flex;flex-direction:column;}
-
-/* ── Layout ── */
 .app{display:flex;min-height:100vh;}
 .sidebar{width:220px;background:var(--green-dark);flex-shrink:0;display:flex;flex-direction:column;}
 .sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1);}
@@ -41,7 +39,7 @@ html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);mi
 .sidebar-user{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px;}
 .sidebar-user-icon{width:28px;height:28px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:600;flex-shrink:0;}
 .sidebar-user-info{flex:1;min-width:0;}
-.sidebar-user-info .name{color:rgba(255,255,255,.9);font-size:12px;font-weight:500;truncate:ellipsis;white-space:nowrap;overflow:hidden;}
+.sidebar-user-info .name{color:rgba(255,255,255,.9);font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;}
 .sidebar-user-info .role{color:rgba(255,255,255,.4);font-size:10px;}
 .sidebar-nav{flex:1;padding:10px 0;overflow-y:auto;}
 .nav-section{padding:6px 12px 2px;color:rgba(255,255,255,.3);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
@@ -55,17 +53,10 @@ html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);mi
 .main-header h2{font-family:var(--font-head);font-size:20px;color:var(--green-dark);}
 .main-header p{font-size:12px;color:var(--gray-600);margin-top:2px;}
 .main-content{flex:1;padding:20px 24px;}
-
-/* ── Mobile Bottom Nav ── */
-
-
-/* ── Cards ── */
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;}
 .card-header{padding:14px 18px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;}
 .card-title{font-weight:600;font-size:14px;color:var(--green-dark);}
 .card-body{padding:16px 18px;}
-
-/* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:500;transition:all .15s;text-decoration:none;}
 .btn-primary{background:var(--green);color:#fff;}
 .btn-primary:hover{background:var(--green-light);}
@@ -78,8 +69,6 @@ html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);mi
 .btn-sm{padding:5px 11px;font-size:12px;}
 .btn-xs{padding:3px 8px;font-size:11px;}
 .btn:disabled{opacity:.45;cursor:not-allowed;}
-
-/* ── Forms ── */
 .form-group{margin-bottom:14px;}
 .form-label{display:block;font-size:12px;font-weight:500;color:var(--gray-700);margin-bottom:5px;}
 .form-input{width:100%;padding:8px 11px;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);font-family:var(--font-body);font-size:13px;color:var(--text);background:#fff;transition:border-color .15s;outline:none;}
@@ -91,43 +80,31 @@ html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);mi
 .form-row-3{grid-template-columns:1fr 1fr 1fr;}
 .form-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;}
 .form-check input{width:16px;height:16px;accent-color:var(--green);}
-
-/* ── Table ── */
 .table-wrap{overflow-x:auto;}
 table.dt{width:100%;border-collapse:collapse;font-size:13px;}
 table.dt th{background:var(--green-dark);color:#fff;padding:9px 10px;text-align:left;font-weight:500;font-size:12px;white-space:nowrap;}
 table.dt td{padding:8px 10px;border-bottom:1px solid var(--gray-100);vertical-align:top;}
 table.dt tr:hover td{background:var(--gray-50);}
 table.dt tr:last-child td{border-bottom:none;}
-
-/* ── Badges ── */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
 .badge-green{background:var(--green-pale);color:var(--green-dark);}
 .badge-gold{background:var(--gold-pale);color:#7a5b00;}
 .badge-red{background:var(--red-pale);color:var(--red);}
 .badge-blue{background:var(--blue-pale);color:var(--blue);}
 .badge-gray{background:var(--gray-100);color:var(--gray-600);}
-
-/* ── Alerts ── */
 .alert{padding:10px 14px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 .alert-success{background:var(--green-pale);color:var(--green-dark);border:1px solid #a5d6a7;}
 .alert-error{background:var(--red-pale);color:var(--red);border:1px solid #ef9a9a;}
 .alert-info{background:var(--blue-pale);color:var(--blue);border:1px solid #90caf9;}
 .alert-warn{background:var(--gold-pale);color:#7a5b00;border:1px solid #ffd54f;}
-
-/* ── Login screen ── */
 .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green-dark) 0%,var(--green) 60%,var(--green-light) 100%);padding:20px;}
 .login-card{background:#fff;border-radius:16px;padding:40px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
 .login-card h1{font-family:var(--font-head);color:var(--green-dark);font-size:26px;margin-bottom:4px;}
 .login-card p{color:var(--gray-600);font-size:13px;margin-bottom:28px;}
 .login-logo{font-size:48px;margin-bottom:16px;}
-
-/* ── Spinner ── */
 .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
 .spinner-dark{border-color:rgba(0,0,0,.2);border-top-color:var(--green);}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* ── Week payroll grid ── */
 .week-grid{overflow-x:auto;}
 .week-table{border-collapse:collapse;font-size:12px;min-width:800px;}
 .week-table th{background:var(--green-dark);color:#fff;padding:8px 6px;text-align:center;font-weight:500;white-space:nowrap;}
@@ -142,14 +119,10 @@ table.dt tr:last-child td{border-bottom:none;}
 .day-cell select{width:100%;padding:3px 5px;border:1.5px solid var(--gray-300);border-radius:4px;font-size:10px;}
 .contract-row td{background:var(--gold-pale);}
 .total-cell{font-weight:700;color:var(--green-dark);text-align:right;padding-right:8px;}
-
-/* ── Tabs ── */
 .tabs{display:flex;gap:3px;background:var(--gray-100);padding:4px;border-radius:var(--radius-sm);margin-bottom:16px;flex-wrap:wrap;width:fit-content;}
 .tab{padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray-600);transition:all .15s;white-space:nowrap;}
 .tab.active{background:#fff;color:var(--green-dark);box-shadow:var(--shadow);}
 .tab:hover:not(.active){color:var(--green);}
-
-/* ── Summary cards ── */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;}
 .summary-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
 .summary-card .label{font-size:11px;color:var(--gray-600);font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
@@ -158,8 +131,17 @@ table.dt tr:last-child td{border-bottom:none;}
 .summary-card.gold .value{color:var(--gold);}
 .summary-card.red .value{color:var(--red);}
 .summary-card.blue .value{color:var(--blue);}
-
-/* ── Responsive ── */
+.pnl-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}
+.pnl-table td{padding:9px 14px;border-bottom:1px solid var(--gray-100);}
+.pnl-table tr:last-child td{border-bottom:none;}
+.pnl-table .pnl-label{color:var(--gray-700);font-weight:500;}
+.pnl-table .pnl-value{text-align:right;font-weight:600;font-family:var(--font-head);}
+.pnl-table .pnl-total td{background:var(--green-dark);color:#fff;font-weight:700;font-size:14px;}
+.pnl-table .pnl-total .pnl-value{color:var(--gold-light);}
+.pnl-table .pnl-profit td{background:var(--green-pale);}
+.pnl-table .pnl-profit .pnl-value{color:var(--green-dark);}
+.pnl-table .pnl-loss td{background:var(--red-pale);}
+.pnl-table .pnl-loss .pnl-value{color:var(--red);}
 @media(min-width:769px){.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;}}
 @media(max-width:768px){
   .app{flex-direction:column;min-height:100vh;min-height:100dvh;}
@@ -179,30 +161,15 @@ table.dt tr:last-child td{border-bottom:none;}
   .week-table{font-size:11px;}
   .tab{padding:6px 10px;font-size:12px;}
 }
-
-/* ── Misc ── */
 .empty{text-align:center;padding:40px;color:var(--gray-500);font-size:13px;}
 .divider{height:1px;background:var(--gray-200);margin:12px 0;}
-.text-right{text-align:right;}
-.text-center{text-align:center;}
-.flex{display:flex;align-items:center;}
-.flex-between{display:flex;align-items:center;justify-content:space-between;}
-.gap-8{gap:8px;}
-.gap-12{gap:12px;}
-.mt-4{margin-top:4px;}
-.mt-8{margin-top:8px;}
-.mt-12{margin-top:12px;}
-.mt-16{margin-top:16px;}
-.mb-4{margin-bottom:4px;}
-.mb-8{margin-bottom:8px;}
-.mb-12{margin-bottom:12px;}
-.fw-600{font-weight:600;}
-.fs-12{font-size:12px;}
-.fs-11{font-size:11px;}
-.color-green{color:var(--green-dark);}
-.color-red{color:var(--red);}
-.color-gold{color:var(--gold);}
-.color-gray{color:var(--gray-600);}
+.text-right{text-align:right;}.text-center{text-align:center;}
+.flex{display:flex;align-items:center;}.flex-between{display:flex;align-items:center;justify-content:space-between;}
+.gap-8{gap:8px;}.gap-12{gap:12px;}
+.mt-4{margin-top:4px;}.mt-8{margin-top:8px;}.mt-12{margin-top:12px;}.mt-16{margin-top:16px;}
+.mb-4{margin-bottom:4px;}.mb-8{margin-bottom:8px;}.mb-12{margin-bottom:12px;}
+.fw-600{font-weight:600;}.fs-12{font-size:12px;}.fs-11{font-size:11px;}
+.color-green{color:var(--green-dark);}.color-red{color:var(--red);}.color-gold{color:var(--gold);}.color-gray{color:var(--gray-600);}
 </style>
 </head>
 <body>
@@ -213,30 +180,20 @@ const LS_AUTH='farm_auth';
 const LS_DATA='farm_data';
 const LS_URL='farm_url';
 const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbxa87-1zyZSQI0T9M3olkMgTjOOfcw_ACWaHCZxOQP7ghIizVKHMExC66NI7kJxFG0J/exec';
-
-// ── Utilities ─────────────────────────────────────────────
 const fmt = n => '₹' + Number(n||0).toLocaleString('en-IN');
 const fmtDate = d => d ? new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '';
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
 function getMondayOf(date) {
-  // Use noon to avoid timezone-induced day shifts
   const d = typeof date === 'string' ? new Date(date + 'T12:00:00') : new Date(date);
-  const day = d.getDay(); // 0=Sun,1=Mon,...,6=Sat
+  const day = d.getDay();
   const diff = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diff);
   return d.toISOString().split('T')[0];
 }
-
-// Normalize any date value to YYYY-MM-DD in LOCAL time
-// GAS returns dates as UTC ISO strings e.g. "2026-03-01T18:30:00.000Z"
-// which is actually 2026-03-02 in IST (+5:30) — so we must use local date, not UTC slice
 function toDateStr(v) {
   if (!v) return '';
   if (typeof v === 'string') {
-    // If it's a plain date "2026-03-02" — return as-is
-    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-    // If it's a full ISO timestamp, parse and convert to local date
+    if (/^d{4}-d{2}-d{2}$/.test(v)) return v;
     const d = new Date(v);
     if (!isNaN(d)) {
       const yr = d.getFullYear();
@@ -254,7 +211,6 @@ function toDateStr(v) {
   }
   return String(v).slice(0,10);
 }
-
 function getWeekDates(monday) {
   const dates = [];
   for (let i = 0; i < 7; i++) {
@@ -264,14 +220,12 @@ function getWeekDates(monday) {
   }
   return dates;
 }
-
 function fiscalYear(date) {
   const d = new Date(date);
-  const month = d.getMonth(); // 0-indexed
+  const month = d.getMonth();
   const year = d.getFullYear();
-  return month >= 3 ? year : year - 1; // April = month 3
+  return month >= 3 ? year : year - 1;
 }
-
 function apiGet(url, params) {
   return new Promise((resolve, reject) => {
     const cb = '_farm' + Date.now() + Math.random().toString(36).slice(2);
@@ -285,16 +239,12 @@ function apiGet(url, params) {
     document.head.appendChild(s);
   });
 }
-
-// ── Shared Components ─────────────────────────────────────
 function Alert({type='info',msg,onClose}) {
   if(!msg) return null;
   const cls = {success:'alert-success',error:'alert-error',info:'alert-info',warn:'alert-warn'}[type]||'alert-info';
   return <div className={'alert '+cls}><span style={{flex:1}}>{msg}</span>{onClose&&<span style={{cursor:'pointer',opacity:.6}} onClick={onClose}>✕</span>}</div>;
 }
-
 function Spinner({dark}) { return <span className={'spinner'+(dark?' spinner-dark':'')}/>; }
-
 function Modal({title,children,onClose,width=480}) {
   return <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.45)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center',padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
     <div style={{background:'#fff',borderRadius:12,width:'100%',maxWidth:width,maxHeight:'90vh',overflow:'auto',boxShadow:'0 20px 60px rgba(0,0,0,.3)'}}>
@@ -306,7 +256,6 @@ function Modal({title,children,onClose,width=480}) {
     </div>
   </div>;
 }
-
 function Confirm({msg,onOk,onCancel}) {
   return <Modal title="Confirm" onClose={onCancel} width={360}>
     <p style={{fontSize:14,marginBottom:20}}>{msg}</p>
@@ -316,7 +265,6 @@ function Confirm({msg,onOk,onCancel}) {
     </div>
   </Modal>;
 }
-
 // ── Login Screen ──────────────────────────────────────────
 function LoginScreen({gasUrl,onLogin}) {
   const [email,setEmail] = useState('');
@@ -324,7 +272,6 @@ function LoginScreen({gasUrl,onLogin}) {
   const [busy,setBusy] = useState(false);
   const [err,setErr] = useState('');
   const [url,setUrl] = useState(gasUrl||DEFAULT_GAS);
-
   const doLogin = async () => {
     if(!url) { setErr('Please enter the GAS URL'); return; }
     if(!email||!pass) { setErr('Enter email and password'); return; }
@@ -339,17 +286,12 @@ function LoginScreen({gasUrl,onLogin}) {
     } catch(e) { setErr(e.message); }
     setBusy(false);
   };
-
   return <div className="login-screen">
     <div className="login-card">
       <div className="login-logo">🌿</div>
       <h1>Pebble's Beach</h1>
       <p>Estate Management System — Sign in to continue</p>
       <Alert type="error" msg={err} onClose={()=>setErr('')}/>
-      {!DEFAULT_GAS && <div className="form-group">
-        <label className="form-label">GAS URL</label>
-        <input className="form-input" placeholder="https://script.google.com/..." value={url} onChange={e=>setUrl(e.target.value)}/>
-      </div>}
       <div className="form-group">
         <label className="form-label">Email</label>
         <input className="form-input" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&doLogin()}/>
@@ -361,18 +303,16 @@ function LoginScreen({gasUrl,onLogin}) {
       <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px'}} onClick={doLogin} disabled={busy}>
         {busy ? <><Spinner/> Signing in…</> : 'Sign In'}
       </button>
-      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>app v10</p>
+      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>app v11</p>
     </div>
   </div>;
 }
-
 // ── Admin Tab ─────────────────────────────────────────────
 function AdminTab({data,gasUrl,auth,onRefresh}) {
   const [tab,setTab] = useState('employees');
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
-
   const call = useCallback(async(action,payload={},extra={}) => {
     setBusy(true);
     try {
@@ -382,7 +322,6 @@ function AdminTab({data,gasUrl,auth,onRefresh}) {
     } catch(e) { N(e.message,'error'); }
     finally { setBusy(false); }
   },[gasUrl,auth]);
-
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
     <div className="tabs">
@@ -397,20 +336,17 @@ function AdminTab({data,gasUrl,auth,onRefresh}) {
     {tab==='users'&&<UsersTab data={data} call={call} busy={busy} auth={auth}/>}
   </div>;
 }
-
 function EmployeesTab({data,call,busy}) {
   const [form,setForm] = useState({name:'',dailyWage:'',otRate:''});
   const [editing,setEditing] = useState(null);
   const [confirm,setConfirm] = useState(null);
   const emps = data.employees||[];
-
   const reset = () => { setForm({name:'',dailyWage:'',otRate:''}); setEditing(null); };
   const save = async() => {
     if(!form.name||!form.dailyWage) return;
-    await call(editing?'saveEmployee':'saveEmployee', editing?{...form,id:editing}:{...form});
+    await call('saveEmployee', editing?{...form,id:editing}:{...form});
     reset();
   };
-
   return <div>
     <div className="card">
       <div className="card-header"><div className="card-title">{editing?'Edit Employee':'Add Employee'}</div></div>
@@ -447,7 +383,6 @@ function EmployeesTab({data,call,busy}) {
     {confirm&&<Confirm msg="Delete this employee?" onOk={async()=>{setConfirm(null);await call('deleteEmployee',{},{id:confirm});}} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-
 function ContractRatesTab({data,call,busy}) {
   const cfg = data.config||{};
   const [maleWage,setMaleWage] = useState(cfg.contractMaleWage||'');
@@ -473,19 +408,15 @@ function ContractRatesTab({data,call,busy}) {
     </div>
     <div className="card"><div className="card-header"><div className="card-title">UPI Payment Matching</div></div>
       <div className="card-body">
-        <p style={{fontSize:12,color:'var(--gray-600)',marginBottom:12}}>
-          Used to automatically detect and match UPI payment confirmations from HDFC Bank emails.
-        </p>
+        <p style={{fontSize:12,color:'var(--gray-600)',marginBottom:12}}>Used to automatically detect and match UPI payment confirmations from HDFC Bank emails.</p>
         <div className="form-row form-row-2">
           <div className="form-group">
             <label className="form-label">Bank Account Last 4 Digits</label>
-            <input className="form-input" value={upiAcct} maxLength={4} placeholder="e.g. 0580"
-              onChange={e=>setUpiAcct(e.target.value.replace(/\D/g,'').slice(0,4))}/>
+            <input className="form-input" value={upiAcct} maxLength={4} placeholder="e.g. 0580" onChange={e=>setUpiAcct(e.target.value.replace(/D/g,'').slice(0,4))}/>
           </div>
           <div className="form-group">
             <label className="form-label">Mailgun Webhook Signing Key</label>
-            <input className="form-input" type="password" value={mgKey} placeholder="From Mailgun → Settings → API Keys"
-              onChange={e=>setMgKey(e.target.value)}/>
+            <input className="form-input" type="password" value={mgKey} placeholder="From Mailgun → Settings → API Keys" onChange={e=>setMgKey(e.target.value)}/>
           </div>
         </div>
         <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!upiAcct||!mgKey}>{busy?<Spinner/>:null}Save</button>
@@ -493,20 +424,18 @@ function ContractRatesTab({data,call,busy}) {
     </div>
   </div>;
 }
-
 function WorkTypesTab({data,call,busy}) {
   const [form,setForm] = useState({name:'',parent:''});
   const [confirm,setConfirm] = useState(null);
   const wts = data.workTypes||[];
   const estateTypes = wts.filter(w=>w.parent==='Estate');
-  const pbh = wts.find(w=>!w.parent||w.parent==='');
   const save = async() => {
     if(!form.name) return;
     await call('saveWorkType',form);
     setForm({name:'',parent:''});
   };
   return <div>
-    <div className="card"><div className="card-header"><div className="card-title">Add Estate Sub-type</div></div>
+    <div className="card"><div className="card-header"><div className="card-title">Add Work Type</div></div>
       <div className="card-body">
         <div className="form-row form-row-2">
           <div className="form-group mb-0"><label className="form-label">Sub-type Name</label><input className="form-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Harvesting"/></div>
@@ -531,7 +460,6 @@ function WorkTypesTab({data,call,busy}) {
     {confirm&&<Confirm msg="Delete this work type?" onOk={async()=>{setConfirm(null);await call('deleteWorkType',{},{id:confirm});}} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-
 function ExpenseTypesTab({data,call,busy}) {
   const [name,setName] = useState('');
   const [confirm,setConfirm] = useState(null);
@@ -541,7 +469,7 @@ function ExpenseTypesTab({data,call,busy}) {
     <div className="card"><div className="card-header"><div className="card-title">Add Expense Type</div></div>
       <div className="card-body" style={{display:'flex',gap:8,alignItems:'flex-end'}}>
         <div className="form-group mb-0" style={{flex:1}}><label className="form-label">Type Name</label><input className="form-input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Vehicle Hire"/></div>
-        <button className="btn btn-primary btn-sm" style={{marginBottom:0}} onClick={save} disabled={busy||!name}>{busy?<Spinner/>:null}Add</button>
+        <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!name}>{busy?<Spinner/>:null}Add</button>
       </div>
     </div>
     <div className="card"><div className="card-body" style={{padding:0}}>
@@ -554,7 +482,6 @@ function ExpenseTypesTab({data,call,busy}) {
     {confirm&&<Confirm msg="Delete this expense type?" onOk={async()=>{setConfirm(null);await call('deleteExpenseType',{},{id:confirm});}} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-
 function UsersTab({data,call,busy,auth}) {
   const [form,setForm] = useState({email:'',name:'',password:'',isAdmin:false,paymentApprover:false});
   const [confirm,setConfirm] = useState(null);
@@ -592,14 +519,12 @@ function UsersTab({data,call,busy,auth}) {
     {confirm&&<Confirm msg="Delete this user?" onOk={async()=>{setConfirm(null);await call('deleteUser',{},{targetEmail:confirm});}} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-
 // ── Wages Tab ─────────────────────────────────────────────
 function WagesTab({data,gasUrl,auth,onRefresh}) {
   const employees = data.employees||[];
   const workTypes = data.workTypes||[];
   const config = data.config||{};
   const estateSubTypes = workTypes.filter(w=>w.parent==='Estate').map(w=>w.name);
-
   const [weekStart,setWeekStart] = useState(getMondayOf(new Date()));
   const [editing,setEditing] = useState(true);
   const [busy,setBusy] = useState(false);
@@ -607,42 +532,22 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   const [confirmDel,setConfirmDel] = useState(null);
   const [expandedWage,setExpandedWage] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
-
   const weekDates = useMemo(()=>getWeekDates(weekStart),[weekStart]);
-
-  // Find saved payroll for selected week
-  const existingPayroll = useMemo(()=>
-    (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart)
-  ,[data.payroll, weekStart]);
-
+  const existingPayroll = useMemo(()=>(data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart),[data.payroll,weekStart]);
   const isPending = existingPayroll?.status==='pending';
   const isPaid    = existingPayroll?.status==='paid';
   const isSaved   = !!existingPayroll;
   const isLocked  = isPending || isPaid || (isSaved && !editing);
-
-  // Build a fresh empty days array
   const makeEmpty = ()=>weekDates.map(()=>({
-    employees: Object.fromEntries(employees.map(e=>[String(e.id),
-      {worked:false,otHours:'',workType:'',workSubType:''}
-    ])),
+    employees: Object.fromEntries(employees.map(e=>[String(e.id),{worked:false,otHours:'',workType:'',workSubType:''}])),
     contractMale:'', contractMaleSubType:'',
     contractFemale:'', contractFemaleSubType:''
   }));
-
-  // GAS may return employee keys as numbers — normalize to strings so totals lookup works
-  const normDays = days => days.map(day=>({
-    ...day,
-    employees: Object.fromEntries(
-      Object.entries(day.employees||{}).map(([k,v])=>[String(k), v])
-    )
-  }));
-
+  const normDays = days => days.map(day=>({...day,employees:Object.fromEntries(Object.entries(day.employees||{}).map(([k,v])=>[String(k),v]))}));
   const [entries,setEntries] = useState(()=>{
     const saved = existingPayroll?.data?.days;
     return (saved && saved.length) ? normDays(saved) : makeEmpty();
   });
-
-  // Reload when week changes OR when payroll data updates (e.g. after save refreshes data)
   const payrollSig = (data.payroll||[]).map(p=>toDateStr(p.weekStart)+':'+p.status).join(',');
   useEffect(()=>{
     const ep = (data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart);
@@ -651,49 +556,29 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
       setEditing(false);
     } else {
       setEntries(weekDates.map(()=>({
-        employees: Object.fromEntries(employees.map(e=>[String(e.id),
-          {worked:false,otHours:'',workType:'',workSubType:''}])),
+        employees: Object.fromEntries(employees.map(e=>[String(e.id),{worked:false,otHours:'',workType:'',workSubType:''}])),
         contractMale:'', contractMaleSubType:'',
         contractFemale:'', contractFemaleSubType:''
       })));
       setEditing(true);
     }
   },[weekStart, payrollSig]);
-
-  const setEmpField = (di,empId,field,val)=>
-    setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,
-      employees:{...day.employees,[String(empId)]:{
-        ...(day.employees?.[String(empId)]||{}), [field]:val
-      }}
-    }));
-
-  const setDayField = (di,field,val)=>
-    setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,[field]:val}));
-
-  // Live totals
+  const setEmpField = (di,empId,field,val)=>setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,employees:{...day.employees,[String(empId)]:{...(day.employees?.[String(empId)]||{}),[field]:val}}}));
+  const setDayField = (di,field,val)=>setEntries(prev=>prev.map((day,i)=>i!==di?day:{...day,[field]:val}));
   const totals = useMemo(()=>{
     const empTotals={};
     employees.forEach(e=>{
       let days=0,ot=0;
-      entries.forEach(day=>{
-        const ed=day.employees?.[String(e.id)];
-        if(ed?.worked){days++;ot+=parseFloat(ed.otHours||0);}
-      });
-      empTotals[e.id]={days,otHours:ot,
-        amount:days*parseFloat(e.dailyWage||0)+ot*parseFloat(e.otRate||0)};
+      entries.forEach(day=>{const ed=day.employees?.[String(e.id)];if(ed?.worked){days++;ot+=parseFloat(ed.otHours||0);}});
+      empTotals[e.id]={days,otHours:ot,amount:days*parseFloat(e.dailyWage||0)+ot*parseFloat(e.otRate||0)};
     });
     const mDays=entries.reduce((s,d)=>s+parseFloat(d.contractMale||0),0);
     const fDays=entries.reduce((s,d)=>s+parseFloat(d.contractFemale||0),0);
     const mAmt=mDays*parseFloat(config.contractMaleWage||0);
     const fAmt=fDays*parseFloat(config.contractFemaleWage||0);
     const totalWages=Object.values(empTotals).reduce((s,e)=>s+e.amount,0)+mAmt+fAmt;
-    return {empTotals,
-      contractMale:{days:mDays,amount:mAmt},
-      contractFemale:{days:fDays,amount:fAmt},
-      totalWages};
+    return {empTotals,contractMale:{days:mDays,amount:mAmt},contractFemale:{days:fDays,amount:fAmt},totalWages};
   },[entries,employees,config]);
-
-  // Validation: work type required for worked days; sub-type required if Estate
   const validate = ()=>{
     for(let di=0;di<entries.length;di++){
       const day=entries[di];
@@ -708,19 +593,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     }
     return true;
   };
-
-  const buildPayload = ()=>({
-    weekStart,
-    data:{
-      days:entries,
-      employees:employees.map(e=>({id:e.id,name:e.name,...totals.empTotals[e.id]})),
-      contractMale:totals.contractMale,
-      contractFemale:totals.contractFemale,
-    },
-    totalWages:totals.totalWages,
-    totalOther:0,
-  });
-
+  const buildPayload = ()=>({weekStart,data:{days:entries,employees:employees.map(e=>({id:e.id,name:e.name,...totals.empTotals[e.id]})),contractMale:totals.contractMale,contractFemale:totals.contractFemale},totalWages:totals.totalWages,totalOther:0});
   const save = async()=>{
     if(isPending){N('Payment request already submitted for this week — locked','warn');return;}
     if(isPaid){N('This week is already paid','warn');return;}
@@ -729,56 +602,32 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     try {
       const r=await apiGet(gasUrl,{action:'savePayroll',...auth,payload:JSON.stringify(buildPayload())});
       if(r.ok){await onRefresh();N('Payroll saved successfully!');setEditing(false);}
-      else throw new Error(r.error||'Save failed — no response from server');
+      else throw new Error(r.error||'Save failed');
     }catch(e){N('Save failed: '+e.message,'error');}
     setBusy(false);
   };
-
-  // Week picker: only allow Mondays, snap any other day to its Monday
   const handleWeekChange = val=>{
-    // val is "YYYY-MM-DD". Parse at noon to avoid TZ issues.
     const d = new Date(val+'T12:00:00');
-    const monday = getMondayOf(d);
-    setWeekStart(monday);
+    setWeekStart(getMondayOf(d));
   };
-
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
-
-    {/* Week header card */}
     <div className="card" style={{marginBottom:12}}>
       <div className="card-header">
         <div>
           <div className="card-title">Weekly Payroll Entry</div>
-          <div style={{fontSize:11,color:'var(--gray-500)',marginTop:2}}>
-            {weekStart} → {weekDates[6]}
-          </div>
+          <div style={{fontSize:11,color:'var(--gray-500)',marginTop:2}}>{weekStart} → {weekDates[6]}</div>
         </div>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          <input type="date" className="form-input" style={{width:160,fontSize:13}}
-            value={weekStart}
-            onChange={e=>handleWeekChange(e.target.value)}
-          />
-          {!isPending&&!isPaid&&isSaved&&!editing&&
-            <button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}>✏️ Edit</button>}
-          {!isPending&&!isPaid&&editing&&
-            <button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>
-              {busy?<><Spinner/>&nbsp;</>:null}💾 Save Payroll
-            </button>}
+          <input type="date" className="form-input" style={{width:160,fontSize:13}} value={weekStart} onChange={e=>handleWeekChange(e.target.value)}/>
+          {!isPending&&!isPaid&&isSaved&&!editing&&<button className="btn btn-ghost btn-sm" onClick={()=>setEditing(true)}>✏️ Edit</button>}
+          {!isPending&&!isPaid&&editing&&<button className="btn btn-primary btn-sm" onClick={save} disabled={busy}>{busy?<><Spinner/>&nbsp;</>:null}💾 Save Payroll</button>}
         </div>
       </div>
-      {isPending&&<div style={{padding:'10px 16px',background:'#fff8e1',fontSize:13,color:'#7a5b00',borderTop:'1px solid #fdd835',display:'flex',alignItems:'center',gap:8}}>
-        ⏳ <b>Payment request already submitted</b> — entries are locked. The manager must mark it as paid before you can edit.
-      </div>}
-      {isPaid&&<div style={{padding:'10px 16px',background:'#e8f5e9',fontSize:13,color:'#1a5c1a',borderTop:'1px solid #a5d6a7',display:'flex',alignItems:'center',gap:8}}>
-        ✅ <b>Payment confirmed and closed</b> — this week's payroll cannot be edited.
-      </div>}
-      {isSaved&&!editing&&!isPending&&!isPaid&&<div style={{padding:'10px 16px',background:'#e3f0ff',fontSize:13,color:'#1a3a6b',borderTop:'1px solid #90bfff',display:'flex',alignItems:'center',gap:8}}>
-        🔒 <b>Payroll saved.</b> Click <b>✏️ Edit</b> in the summary below to make changes.
-      </div>}
+      {isPending&&<div style={{padding:'10px 16px',background:'#fff8e1',fontSize:13,color:'#7a5b00',borderTop:'1px solid #fdd835',display:'flex',alignItems:'center',gap:8}}>⏳ <b>Payment request already submitted</b> — entries are locked.</div>}
+      {isPaid&&<div style={{padding:'10px 16px',background:'#e8f5e9',fontSize:13,color:'#1a5c1a',borderTop:'1px solid #a5d6a7',display:'flex',alignItems:'center',gap:8}}>✅ <b>Payment confirmed and closed</b> — this week's payroll cannot be edited.</div>}
+      {isSaved&&!editing&&!isPending&&!isPaid&&<div style={{padding:'10px 16px',background:'#e3f0ff',fontSize:13,color:'#1a3a6b',borderTop:'1px solid #90bfff',display:'flex',alignItems:'center',gap:8}}>🔒 <b>Payroll saved.</b> Click <b>✏️ Edit</b> in the summary below to make changes.</div>}
     </div>
-
-    {/* Payroll grid */}
     <div className="card">
       <div style={{overflowX:'auto'}}>
         <table className="week-table" style={{width:'100%'}}>
@@ -792,7 +641,6 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
             </tr>
           </thead>
           <tbody>
-            {/* Named employees */}
             {employees.map(emp=>(
               <tr key={emp.id}>
                 <td className="emp-name" style={{paddingLeft:12}}>
@@ -804,101 +652,61 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
                   return <td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
                     <div className="day-cell">
                       <label className="form-check" style={{justifyContent:'center',gap:4}}>
-                        <input type="checkbox" disabled={isLocked}
-                          checked={!!ed.worked}
-                          onChange={e=>setEmpField(di,emp.id,'worked',e.target.checked)}/>
+                        <input type="checkbox" disabled={isLocked} checked={!!ed.worked} onChange={e=>setEmpField(di,emp.id,'worked',e.target.checked)}/>
                         <span style={{fontSize:10,color:'var(--gray-600)'}}>Worked</span>
                       </label>
                       {ed.worked&&<>
-                        <input className="num-input" type="number" min="0" step="0.5"
-                          placeholder="OT hrs" disabled={isLocked}
-                          value={ed.otHours||''}
-                          onChange={e=>setEmpField(di,emp.id,'otHours',e.target.value)}
-                          style={{width:'100%'}}/>
-                        <select className="num-input" style={{width:'100%'}} disabled={isLocked}
-                          value={ed.workType||''}
-                          onChange={e=>setEmpField(di,emp.id,'workType',e.target.value)}>
+                        <input className="num-input" type="number" min="0" step="0.5" placeholder="OT hrs" disabled={isLocked} value={ed.otHours||''} onChange={e=>setEmpField(di,emp.id,'otHours',e.target.value)} style={{width:'100%'}}/>
+                        <select className="num-input" style={{width:'100%'}} disabled={isLocked} value={ed.workType||''} onChange={e=>setEmpField(di,emp.id,'workType',e.target.value)}>
                           <option value="">⚠ Work type*</option>
                           <option value="PBH">PBH</option>
                           <option value="Estate">Estate</option>
                         </select>
-                        {ed.workType==='Estate'&&
-                          <select className="num-input" style={{width:'100%'}} disabled={isLocked}
-                            value={ed.workSubType||''}
-                            onChange={e=>setEmpField(di,emp.id,'workSubType',e.target.value)}>
-                            <option value="">⚠ Sub-type*</option>
-                            {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
-                          </select>
-                        }
+                        {ed.workType==='Estate'&&<select className="num-input" style={{width:'100%'}} disabled={isLocked} value={ed.workSubType||''} onChange={e=>setEmpField(di,emp.id,'workSubType',e.target.value)}>
+                          <option value="">⚠ Sub-type*</option>
+                          {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
+                        </select>}
                       </>}
                     </div>
                   </td>;
                 })}
                 <td className="total-cell">{totals.empTotals[emp.id]?.days||0}</td>
                 <td className="total-cell">{totals.empTotals[emp.id]?.otHours||0}</td>
-                <td className="total-cell" style={{color:'var(--green-dark)'}}>{fmt(totals.empTotals[emp.id]?.amount||0)}</td>
+                <td className="total-cell">{fmt(totals.empTotals[emp.id]?.amount||0)}</td>
               </tr>
             ))}
-
-            {/* Contract Male — Estate work type fixed, only sub-type selectable */}
             <tr className="contract-row">
-              <td className="emp-name" style={{paddingLeft:12}}>
-                Contract Male<br/>
-                <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractMaleWage)}/day · Estate</span>
-              </td>
+              <td className="emp-name" style={{paddingLeft:12}}>Contract Male<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractMaleWage)}/day · Estate</span></td>
               {entries.map((day,di)=><td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
                 <div className="day-cell">
-                  <input className="num-input" type="number" min="0" placeholder="# workers"
-                    disabled={isLocked} value={day.contractMale||''}
-                    onChange={e=>setDayField(di,'contractMale',e.target.value)}
-                    style={{width:'100%'}}/>
-                  {parseFloat(day.contractMale||0)>0&&
-                    <select className="num-input" style={{width:'100%'}} disabled={isLocked}
-                      value={day.contractMaleSubType||''}
-                      onChange={e=>setDayField(di,'contractMaleSubType',e.target.value)}>
-                      <option value="">⚠ Sub-type*</option>
-                      {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
-                    </select>
-                  }
+                  <input className="num-input" type="number" min="0" placeholder="# workers" disabled={isLocked} value={day.contractMale||''} onChange={e=>setDayField(di,'contractMale',e.target.value)} style={{width:'100%'}}/>
+                  {parseFloat(day.contractMale||0)>0&&<select className="num-input" style={{width:'100%'}} disabled={isLocked} value={day.contractMaleSubType||''} onChange={e=>setDayField(di,'contractMaleSubType',e.target.value)}>
+                    <option value="">⚠ Sub-type*</option>
+                    {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
+                  </select>}
                 </div>
               </td>)}
               <td className="total-cell">{totals.contractMale.days}</td>
               <td className="total-cell">—</td>
               <td className="total-cell">{fmt(totals.contractMale.amount)}</td>
             </tr>
-
-            {/* Contract Female */}
             <tr className="contract-row">
-              <td className="emp-name" style={{paddingLeft:12}}>
-                Contract Female<br/>
-                <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractFemaleWage)}/day · Estate</span>
-              </td>
+              <td className="emp-name" style={{paddingLeft:12}}>Contract Female<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractFemaleWage)}/day · Estate</span></td>
               {entries.map((day,di)=><td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
                 <div className="day-cell">
-                  <input className="num-input" type="number" min="0" placeholder="# workers"
-                    disabled={isLocked} value={day.contractFemale||''}
-                    onChange={e=>setDayField(di,'contractFemale',e.target.value)}
-                    style={{width:'100%'}}/>
-                  {parseFloat(day.contractFemale||0)>0&&
-                    <select className="num-input" style={{width:'100%'}} disabled={isLocked}
-                      value={day.contractFemaleSubType||''}
-                      onChange={e=>setDayField(di,'contractFemaleSubType',e.target.value)}>
-                      <option value="">⚠ Sub-type*</option>
-                      {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
-                    </select>
-                  }
+                  <input className="num-input" type="number" min="0" placeholder="# workers" disabled={isLocked} value={day.contractFemale||''} onChange={e=>setDayField(di,'contractFemale',e.target.value)} style={{width:'100%'}}/>
+                  {parseFloat(day.contractFemale||0)>0&&<select className="num-input" style={{width:'100%'}} disabled={isLocked} value={day.contractFemaleSubType||''} onChange={e=>setDayField(di,'contractFemaleSubType',e.target.value)}>
+                    <option value="">⚠ Sub-type*</option>
+                    {estateSubTypes.map(s=><option key={s} value={s}>{s}</option>)}
+                  </select>}
                 </div>
               </td>)}
               <td className="total-cell">{totals.contractFemale.days}</td>
               <td className="total-cell">—</td>
               <td className="total-cell">{fmt(totals.contractFemale.amount)}</td>
             </tr>
-
-            {/* Total row */}
             <tr style={{background:'var(--green-pale)'}}>
-              <td colSpan={weekDates.length+1} style={{textAlign:'right',paddingRight:12,fontWeight:600,fontSize:13,color:'var(--green-dark)',padding:'8px 12px'}}>
-                Total Wages
-              </td>
+              <td colSpan={weekDates.length+1} style={{textAlign:'right',paddingRight:12,fontWeight:600,fontSize:13,color:'var(--green-dark)',padding:'8px 12px'}}>Total Wages</td>
               <td colSpan={2}></td>
               <td className="total-cell" style={{fontSize:14,fontWeight:700}}>{fmt(totals.totalWages)}</td>
             </tr>
@@ -906,20 +714,12 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
         </table>
       </div>
     </div>
-
-    {/* All saved payroll weeks — expandable table */}
     <div className="card" style={{marginTop:12}}>
       <div className="card-body" style={{padding:0}}>
         {(data.payroll||[]).length===0
           ? <div className="empty">No payroll saved yet</div>
           : <div className="table-wrap"><table className="dt">
-              <thead><tr>
-                <th style={{width:32}}></th>
-                <th>Week</th>
-                <th style={{textAlign:'right'}}>Total Wages</th>
-                <th>Status</th>
-                <th></th>
-              </tr></thead>
+              <thead><tr><th style={{width:32}}></th><th>Week</th><th style={{textAlign:'right'}}>Total Wages</th><th>Status</th><th></th></tr></thead>
               <tbody>
                 {[...(data.payroll||[])].sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1).map(pr=>{
                   const ws=toDateStr(pr.weekStart);
@@ -935,8 +735,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
                         <button className="btn btn-ghost btn-xs" style={{padding:'2px 5px'}} onClick={()=>setExpandedWage(isExpanded?null:ws)}>{isExpanded?'▲':'▼'}</button>
                       </td>
                       <td style={{whiteSpace:'nowrap',fontWeight:isThisWeek?700:400}}>
-                        {fmtDate(ws)}
-                        <div style={{fontSize:10,color:'var(--gray-500)'}}>{ws} → {getWeekDates(ws)[6]}</div>
+                        {fmtDate(ws)}<div style={{fontSize:10,color:'var(--gray-500)'}}>{ws} → {getWeekDates(ws)[6]}</div>
                       </td>
                       <td style={{textAlign:'right',fontWeight:600}}>{fmt(pr.totalWages)}</td>
                       <td>
@@ -961,28 +760,10 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
                             <th style={{padding:'6px 12px',textAlign:'right',fontWeight:600,color:'var(--gray-700)'}}>Amount</th>
                           </tr></thead>
                           <tbody>
-                            {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}>
-                              <td style={{padding:'5px 12px'}}>{e.name}</td>
-                              <td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}</td>
-                              <td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td>
-                              <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td>
-                            </tr>)}
-                            {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
-                              <td style={{padding:'5px 12px'}}>Contract Male</td>
-                              <td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}</td>
-                              <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
-                              <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td>
-                            </tr>}
-                            {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
-                              <td style={{padding:'5px 12px'}}>Contract Female</td>
-                              <td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}</td>
-                              <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
-                              <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td>
-                            </tr>}
-                            <tr style={{background:'var(--green-pale)'}}>
-                              <td colSpan={3} style={{padding:'6px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
-                              <td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(pr.totalWages)}</td>
-                            </tr>
+                            {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}><td style={{padding:'5px 12px'}}>{e.name}</td><td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}</td><td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td></tr>)}
+                            {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>Contract Male</td><td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td></tr>}
+                            {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>Contract Female</td><td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td></tr>}
+                            <tr style={{background:'var(--green-pale)'}}><td colSpan={3} style={{padding:'6px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td><td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(pr.totalWages)}</td></tr>
                           </tbody>
                         </table>
                       </td>
@@ -1011,14 +792,10 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
   const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
   const expenseTypes = data.expenseTypes||[];
   const expenses = data.otherExpenses||[];
-
-  // Look up payroll status for a given weekStart
   const weekStatus = ws => (data.payroll||[]).find(p=>toDateStr(p.weekStart)===ws)?.status||'draft';
-
   const formWeekStart = toDateStr(getMondayOf(form.date));
   const formWeekStatus = weekStatus(formWeekStart);
   const formWeekLocked = formWeekStatus === 'pending' || formWeekStatus === 'paid';
-
   const save = async() => {
     if(!form.type||!form.amount) return;
     if(formWeekLocked){N('This week is '+formWeekStatus+' — cannot add expenses','error');return;}
@@ -1026,11 +803,10 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
     try {
       const r = await apiGet(gasUrl,{action:'saveOtherExpense',...auth,payload:JSON.stringify({...form,weekStart:getMondayOf(form.date)})});
       if(r.ok) { await onRefresh(); N('Expense saved!'); setForm(f=>({...f,type:'',amount:'',note:''})); }
-      else throw new Error(r.error||'Save failed — no response from server');
+      else throw new Error(r.error||'Save failed');
     } catch(e) { N('Save expense failed: '+e.message,'error'); }
     setBusy(false);
   };
-
   const del = async(id) => {
     setBusy(true);
     try {
@@ -1040,7 +816,6 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
     } catch(e) { N('Delete expense failed: '+e.message,'error'); }
     setBusy(false); setConfirm(null);
   };
-
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
     <div className="card">
@@ -1058,9 +833,7 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
           <div className="form-group"><label className="form-label">Note (optional)</label><input className="form-input" value={form.note} onChange={e=>setForm(f=>({...f,note:e.target.value}))} placeholder="Details…"/></div>
         </div>
         <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.type||!form.amount||formWeekLocked}>{busy?<Spinner/>:null}Add Expense</button>
-        {formWeekLocked&&<div style={{marginTop:8,fontSize:12,color:'#7a5b00',background:'#fff8e1',padding:'6px 10px',borderRadius:5}}>
-          ⚠️ The week of {formWeekStart} is <b>{formWeekStatus}</b> — expenses cannot be added or changed.
-        </div>}
+        {formWeekLocked&&<div style={{marginTop:8,fontSize:12,color:'#7a5b00',background:'#fff8e1',padding:'6px 10px',borderRadius:5}}>⚠️ The week of {formWeekStart} is <b>{formWeekStatus}</b> — expenses cannot be added or changed.</div>}
       </div>
     </div>
     <div className="card"><div className="card-body" style={{padding:0}}>
@@ -1093,7 +866,6 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
     {confirm&&<Confirm msg="Delete this expense?" onOk={()=>del(confirm)} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-
 // ── Payment Request Tab ───────────────────────────────────
 function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
   const allPayroll  = data.payroll||[];
@@ -1103,7 +875,6 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
   const [confirm,setConfirm] = useState(null);
   const [expandedPR,setExpandedPR] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
-
   const submit = async(pr)=>{
     const ws=toDateStr(pr.weekStart);
     setBusy(ws);
@@ -1114,23 +885,20 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
       const payload={weekStart:ws,data:{...(wd||{}),otherExpenses:oe.map(e=>({type:e.type,amount:e.amount,note:e.note}))},totalWages:parseFloat(pr.totalWages||0),totalOther};
       const r=await apiGet(gasUrl,{action:"submitPaymentRequest",...auth,payload:JSON.stringify(payload)});
       if(r.ok){await onRefresh();N("Payment request submitted — email sent to approver.");}
-      else throw new Error(r.error||'Submit failed — no response from server');
+      else throw new Error(r.error||'Submit failed');
     }catch(e){N('Submit failed: '+e.message,"error");}
     setBusy(null);
   };
-
   const del = async(ws)=>{
     setBusy(ws);
     try {
       const r=await apiGet(gasUrl,{action:"deletePayroll",...auth,weekStart:ws});
-      if(r.ok){await onRefresh();N("Payment request deleted.");}
+      if(r.ok){await onRefresh();N("Payroll deleted.");}
       else throw new Error(r.error||'Delete failed');
     }catch(e){N('Delete failed: '+e.message,"error");}
     setBusy(null);setConfirm(null);
   };
-
   const sorted=[...allPayroll].sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1);
-
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
     <div className="card"><div className="card-body" style={{padding:0}}>
@@ -1165,8 +933,7 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
                       <button className="btn btn-ghost btn-xs" style={{padding:'2px 5px'}} onClick={()=>setExpandedPR(isExpanded?null:ws)}>{isExpanded?'▲':'▼'}</button>
                     </td>
                     <td style={{whiteSpace:"nowrap"}}>
-                      {fmtDate(ws)}
-                      <div style={{fontSize:10,color:"var(--gray-500)"}}>{ws} to {getWeekDates(ws)[6]}</div>
+                      {fmtDate(ws)}<div style={{fontSize:10,color:"var(--gray-500)"}}>{ws} to {getWeekDates(ws)[6]}</div>
                     </td>
                     <td style={{textAlign:"right"}}>{fmt(totalWages)}</td>
                     <td style={{textAlign:"right"}}>{fmt(totalOther)}</td>
@@ -1178,9 +945,7 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
                     </td>
                     <td style={{textAlign:"right",whiteSpace:"nowrap"}}>
                       {status==="draft"&&<>
-                        <button className="btn btn-primary btn-xs" onClick={()=>submit(pr)} disabled={!!busy}>
-                          {isSubmitting?<Spinner/>:"Submit"}
-                        </button>
+                        <button className="btn btn-primary btn-xs" onClick={()=>submit(pr)} disabled={!!busy}>{isSubmitting?<Spinner/>:"Submit"}</button>
                         {" "}<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(ws)} disabled={!!busy}>Del</button>
                       </>}
                       {status==="pending"&&<span style={{fontSize:11,color:"var(--gray-500)"}}>Awaiting payment</span>}
@@ -1197,42 +962,13 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
                           <th style={{padding:'6px 12px',textAlign:'right',fontWeight:600,color:'var(--gray-700)'}}>Amount</th>
                         </tr></thead>
                         <tbody>
-                          {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}>
-                            <td style={{padding:'5px 12px'}}>{e.name}</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}d</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td>
-                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td>
-                          </tr>)}
-                          {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
-                            <td style={{padding:'5px 12px'}}>Contract Male</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}d</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
-                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td>
-                          </tr>}
-                          {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
-                            <td style={{padding:'5px 12px'}}>Contract Female</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}d</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
-                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td>
-                          </tr>}
-                          {emps.length>0||mDays>0||fDays>0?<tr style={{borderBottom:'1px solid var(--gray-300)',background:'var(--green-pale)'}}>
-                            <td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td>
-                            <td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td>
-                          </tr>:null}
-                          {oe.map((e,i)=><tr key={'e'+i} style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}>
-                            <td style={{padding:'5px 12px'}}>{e.type}</td>
-                            <td style={{padding:'5px 12px',color:'var(--gray-600)'}}>{e.note||'—'}</td>
-                            <td style={{padding:'5px 12px',textAlign:'center'}}>—</td>
-                            <td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td>
-                          </tr>)}
-                          {oe.length>0&&<tr style={{borderBottom:'1px solid var(--gray-300)',background:'#fff8e1'}}>
-                            <td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--gold)'}}>Total Other</td>
-                            <td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--gold)'}}>{fmt(totalOther)}</td>
-                          </tr>}
-                          <tr style={{background:'var(--green-dark)'}}>
-                            <td colSpan={3} style={{padding:'6px 12px',fontWeight:700,color:'#fff'}}>Grand Total</td>
-                            <td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--gold-light)'}}>{fmt(totalWages+totalOther)}</td>
-                          </tr>
+                          {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}><td style={{padding:'5px 12px'}}>{e.name}</td><td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}d</td><td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td></tr>)}
+                          {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>Contract Male</td><td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}d</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td></tr>}
+                          {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>Contract Female</td><td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}d</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td></tr>}
+                          {(emps.length>0||mDays>0||fDays>0)&&<tr style={{borderBottom:'1px solid var(--gray-300)',background:'var(--green-pale)'}}><td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td><td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(totalWages)}</td></tr>}
+                          {oe.map((e,i)=><tr key={'e'+i} style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>{e.type}</td><td style={{padding:'5px 12px',color:'var(--gray-600)'}}>{e.note||'—'}</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td></tr>)}
+                          {oe.length>0&&<tr style={{borderBottom:'1px solid var(--gray-300)',background:'#fff8e1'}}><td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--gold)'}}>Total Other</td><td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--gold)'}}>{fmt(totalOther)}</td></tr>}
+                          <tr style={{background:'var(--green-dark)'}}><td colSpan={3} style={{padding:'6px 12px',fontWeight:700,color:'#fff'}}>Grand Total</td><td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--gold-light)'}}>{fmt(totalWages+totalOther)}</td></tr>
                         </tbody>
                       </table>
                     </td>
@@ -1259,7 +995,6 @@ function ExpensesTab({data,gasUrl,auth,onRefresh}) {
     {tab==='request'&&<PaymentRequestTab data={data} gasUrl={gasUrl} auth={auth} onRefresh={onRefresh}/>}
   </div>;
 }
-
 // ── Income Tab ────────────────────────────────────────────
 function IncomeTab({data,gasUrl,auth,onRefresh}) {
   const [form,setForm] = useState({type:'Coffee',amount:'',note:'',date:new Date().toISOString().split('T')[0]});
@@ -1269,7 +1004,6 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
   const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
   const incomes = data.income||[];
   const TYPES = ['Coffee','Pepper','Timber','Other'];
-
   const save = async() => {
     if(!form.amount) return;
     setBusy(true);
@@ -1280,7 +1014,6 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
     } catch(e) { N('Save income failed: '+e.message,'error'); }
     setBusy(false);
   };
-
   const del = async(id) => {
     setBusy(true);
     try {
@@ -1289,9 +1022,7 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
     } catch(e) { N('Delete income failed: '+e.message,'error'); }
     setBusy(false); setConfirm(null);
   };
-
   const totalIncome = incomes.reduce((s,i)=>s+parseFloat(i.amount||0),0);
-
   return <div>
     <Alert type={msg?.tp} msg={msg?.t} onClose={()=>setMsg(null)}/>
     <div className="card">
@@ -1310,7 +1041,6 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
         <button className="btn btn-primary btn-sm" onClick={save} disabled={busy||!form.amount}>{busy?<Spinner/>:null}Record Income</button>
       </div>
     </div>
-
     <div className="summary-grid">
       {TYPES.map(t=>{
         const total = incomes.filter(i=>i.type===t).reduce((s,i)=>s+parseFloat(i.amount||0),0);
@@ -1321,7 +1051,6 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
         <div className="value" style={{color:'var(--gold-light)',fontSize:20}}>{fmt(totalIncome)}</div>
       </div>
     </div>
-
     <div className="card"><div className="card-body" style={{padding:0}}>
       {incomes.length===0?<div className="empty">No income recorded yet</div>:
       <div className="table-wrap"><table className="dt">
@@ -1338,25 +1067,20 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
     {confirm&&<Confirm msg="Delete this income entry?" onOk={()=>del(confirm)} onCancel={()=>setConfirm(null)}/>}
   </div>;
 }
-
 // ── Reports Tab ───────────────────────────────────────────
 function ReportsTab({data}) {
-  const [tab,setTab] = useState('weekly');
+  const [tab,setTab] = useState('requests');
   const [selMonth,setSelMonth] = useState(new Date().toISOString().slice(0,7));
   const [selYear,setSelYear] = useState(fiscalYear(new Date()).toString());
-
+  const [expandedReq,setExpandedReq] = useState(null);
+  const [expandedPay,setExpandedPay] = useState(null);
   const payroll = data.payroll||[];
   const otherExpenses = data.otherExpenses||[];
   const income = data.income||[];
-
-  // Use ALL payrolls (draft/pending/paid) for expense reporting — wages are a cost when saved
   const allSavedPayroll = payroll.filter(p=>p.weekStart);
   const paidPayroll = payroll.filter(p=>p.status==='paid');
   const pendingPayroll = payroll.filter(p=>p.status==='pending');
 
-  const weeklyPaid = paidPayroll;
-
-  // Monthly P&L — wages from ALL saved payrolls, not just paid
   const monthlyPnL = useMemo(()=>{
     const [yr,mo] = selMonth.split('-').map(Number);
     const inMonth = d=>{ const dt=new Date(d); return dt.getFullYear()===yr&&dt.getMonth()===mo-1; };
@@ -1366,7 +1090,6 @@ function ReportsTab({data}) {
     return {wages,other,income:inc,net:inc-(wages+other)};
   },[selMonth,allSavedPayroll,otherExpenses,income]);
 
-  // Annual P&L (Apr-Mar) — wages from ALL saved payrolls
   const annualPnL = useMemo(()=>{
     const yr=parseInt(selYear);
     const start=new Date(yr,3,1), end=new Date(yr+1,2,31,23,59,59);
@@ -1379,89 +1102,128 @@ function ReportsTab({data}) {
     return {wages,other,income:inc,net:inc-(wages+other),byType};
   },[selYear,allSavedPayroll,otherExpenses,income]);
 
-  const PnLCard = ({wages,other,income,net})=><div>
-    <div className="summary-grid">
-      <div className="summary-card"><div className="label">Wages</div><div className="value" style={{color:'var(--red)',fontSize:18}}>{fmt(wages)}</div></div>
-      <div className="summary-card"><div className="label">Other Expenses</div><div className="value" style={{color:'var(--earth)',fontSize:18}}>{fmt(other)}</div></div>
-      <div className="summary-card"><div className="label">Total Expenses</div><div className="value" style={{fontSize:18}}>{fmt(wages+other)}</div></div>
-      <div className="summary-card"><div className="label">Income</div><div className="value" style={{color:'var(--green-dark)',fontSize:18}}>{fmt(income)}</div></div>
-      <div className="summary-card" style={{background:net>=0?'var(--green-dark)':'var(--red)'}}>
-        <div className="label" style={{color:'rgba(255,255,255,.7)'}}>Net {net>=0?'Profit':'Loss'}</div>
-        <div className="value" style={{color:'var(--gold-light)',fontSize:20}}>{fmt(Math.abs(net))}</div>
-        <div className="sub" style={{color:'rgba(255,255,255,.5)'}}>{net>=0?'▲ Surplus':'▼ Deficit'}</div>
+  // Compact P&L summary table (replaces large summary cards)
+  const PnLTable = ({wages,other,income,net})=>{
+    const totalExp = wages+other;
+    const isProfit = net >= 0;
+    return <div className="card mb-12">
+      <div className="card-body" style={{padding:0}}>
+        <table className="pnl-table">
+          <tbody>
+            <tr><td className="pnl-label">💰 Wages</td><td className="pnl-value" style={{color:'var(--red)'}}>{fmt(wages)}</td></tr>
+            <tr><td className="pnl-label">📋 Other Expenses</td><td className="pnl-value" style={{color:'var(--earth)'}}>{fmt(other)}</td></tr>
+            <tr className="pnl-total"><td className="pnl-label" style={{color:'rgba(255,255,255,.8)'}}>Total Expenses</td><td className="pnl-value">{fmt(totalExp)}</td></tr>
+            <tr><td className="pnl-label">📥 Income</td><td className="pnl-value" style={{color:'var(--green-dark)'}}>{fmt(income)}</td></tr>
+            <tr className={isProfit?'pnl-profit':'pnl-loss'}>
+              <td className="pnl-label" style={{fontWeight:700}}>{isProfit?'▲ Net Profit':'▼ Net Loss'}</td>
+              <td className="pnl-value" style={{fontSize:15}}>{fmt(Math.abs(net))}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-  </div>;
+    </div>;
+  };
 
-  const PayrollTable = ({rows,showPaidDate})=>{
-    if(!rows.length) return <div className="empty">No records found</div>;
-    return <div className="table-wrap"><table className="dt">
-      <thead><tr>
-        <th>Week of</th><th>Status</th>
-        <th style={{textAlign:'right'}}>Wages</th><th style={{textAlign:'right'}}>Other</th>
-        <th style={{textAlign:'right'}}>Total</th>
-        {showPaidDate&&<th>Paid On</th>}
-        <th>Submitted</th>
-      </tr></thead>
-      <tbody>{rows.map(p=>{
-        const pOther=otherExpenses.filter(e=>toDateStr(e.weekStart)===toDateStr(p.weekStart)).reduce((s,e)=>s+parseFloat(e.amount||0),0);
-        return <tr key={p.weekStart}>
-          <td style={{whiteSpace:'nowrap'}}>{fmtDate(toDateStr(p.weekStart))}</td>
-          <td>{p.status==='paid'?<span className="badge badge-green">Paid</span>:p.status==='pending'?<span className="badge badge-gold">Pending</span>:<span className="badge badge-gray">Draft</span>}</td>
-          <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
-          <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
-          <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(parseFloat(p.totalWages||0)+pOther)}</td>
-          {showPaidDate&&<td style={{fontSize:12,color:'var(--gray-600)'}}>{fmtDate(p.paidAt)}</td>}
-          <td style={{fontSize:12,color:'var(--gray-600)'}}>{p.submittedAt?fmtDate(p.submittedAt):'—'}</td>
-        </tr>;
-      })}</tbody>
-    </table></div>;
+  // Expandable payroll detail helper
+  const PayrollDetail = ({pr,colSpan})=>{
+    const wd=(()=>{const r=pr.data;if(!r)return null;if(typeof r==='string'){try{return JSON.parse(r);}catch{return null;}}return r;})();
+    const emps=(wd?.employees||[]).filter(e=>parseFloat(e.days||0)>0||parseFloat(e.otHours||0)>0);
+    const mDays=parseFloat(wd?.contractMale?.days||0);
+    const fDays=parseFloat(wd?.contractFemale?.days||0);
+    const oe=otherExpenses.filter(e=>toDateStr(e.weekStart)===toDateStr(pr.weekStart));
+    const totalOther=oe.reduce((s,e)=>s+parseFloat(e.amount||0),0);
+    return <tr>
+      <td colSpan={colSpan} style={{padding:0,background:'var(--gray-50)'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+          <thead><tr style={{background:'var(--gray-200)'}}>
+            <th style={{padding:'6px 12px',textAlign:'left',fontWeight:600,color:'var(--gray-700)'}}>Item</th>
+            <th style={{padding:'6px 12px',textAlign:'center',fontWeight:600,color:'var(--gray-700)'}}>Days</th>
+            <th style={{padding:'6px 12px',textAlign:'center',fontWeight:600,color:'var(--gray-700)'}}>OT Hrs</th>
+            <th style={{padding:'6px 12px',textAlign:'right',fontWeight:600,color:'var(--gray-700)'}}>Amount</th>
+          </tr></thead>
+          <tbody>
+            {emps.map((e,i)=><tr key={i} style={{borderBottom:'1px solid var(--gray-200)'}}><td style={{padding:'5px 12px'}}>{e.name}</td><td style={{padding:'5px 12px',textAlign:'center'}}>{e.days}</td><td style={{padding:'5px 12px',textAlign:'center'}}>{e.otHours||0}</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td></tr>)}
+            {mDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>Contract Male</td><td style={{padding:'5px 12px',textAlign:'center'}}>{mDays}</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractMale.amount)}</td></tr>}
+            {fDays>0&&<tr style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>Contract Female</td><td style={{padding:'5px 12px',textAlign:'center'}}>{fDays}</td><td style={{padding:'5px 12px',textAlign:'center'}}>—</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(wd.contractFemale.amount)}</td></tr>}
+            {(emps.length>0||mDays>0||fDays>0)&&<tr style={{borderBottom:'1px solid var(--gray-300)',background:'var(--green-pale)'}}><td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--green-dark)'}}>Total Wages</td><td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(pr.totalWages)}</td></tr>}
+            {oe.map((e,i)=><tr key={'e'+i} style={{borderBottom:'1px solid var(--gray-200)',background:'#fffde7'}}><td style={{padding:'5px 12px'}}>{e.type}</td><td style={{padding:'5px 12px',color:'var(--gray-600)',textAlign:'center'}} colSpan={2}>{e.note||'—'}</td><td style={{padding:'5px 12px',textAlign:'right'}}>{fmt(e.amount)}</td></tr>)}
+            {oe.length>0&&<tr style={{borderBottom:'1px solid var(--gray-300)',background:'#fff8e1'}}><td colSpan={3} style={{padding:'5px 12px',fontWeight:600,color:'var(--gold)'}}>Total Other</td><td style={{padding:'5px 12px',textAlign:'right',fontWeight:700,color:'var(--gold)'}}>{fmt(totalOther)}</td></tr>}
+            <tr style={{background:'var(--green-dark)'}}><td colSpan={3} style={{padding:'6px 12px',fontWeight:700,color:'#fff'}}>Grand Total</td><td style={{padding:'6px 12px',textAlign:'right',fontWeight:700,color:'var(--gold-light)'}}>{fmt(parseFloat(pr.totalWages||0)+totalOther)}</td></tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>;
   };
 
   return <div>
     <div className="tabs">
-      {[['weekly','📅 Weekly'],['requests','⏳ Requests'],['payments','✅ Payments'],['monthly','📊 Monthly P&L'],['annual','📈 Annual P&L']].map(([id,label])=>
+      {[['requests','⏳ Requests'],['payments','✅ Payments'],['monthly','📊 Monthly P&L'],['annual','📈 Annual P&L']].map(([id,label])=>
         <div key={id} className={'tab'+(tab===id?' active':'')} onClick={()=>setTab(id)}>{label}</div>
       )}
     </div>
 
-    {tab==='weekly'&&<div>
-      <div className="card">
-        <div className="card-header"><div className="card-title">All Saved Weekly Payrolls</div></div>
-        <div className="card-body" style={{padding:0}}>
-          <PayrollTable rows={[...allSavedPayroll].sort((a,b)=>b.weekStart>a.weekStart?1:-1)} showPaidDate={false}/>
-        </div>
-      </div>
-    </div>}
-
     {tab==='requests'&&<div>
-      <div className="summary-grid">
-        <div className="summary-card gold">
-          <div className="label">Pending Requests</div>
-          <div className="value" style={{fontSize:20}}>{pendingPayroll.length}</div>
-          <div className="sub">{fmt(pendingPayroll.reduce((s,p)=>s+parseFloat(p.totalWages||0),0))} total wages</div>
-        </div>
-      </div>
       <div className="card">
-        <div className="card-header"><div className="card-title">⏳ Submitted Payment Requests</div></div>
+        <div className="card-header">
+          <div className="card-title">⏳ Submitted Payment Requests</div>
+          <span className="badge badge-gold">{pendingPayroll.length} pending</span>
+        </div>
         <div className="card-body" style={{padding:0}}>
-          <PayrollTable rows={[...pendingPayroll].sort((a,b)=>b.weekStart>a.weekStart?1:-1)} showPaidDate={false}/>
+          {pendingPayroll.length===0?<div className="empty">No pending requests</div>:
+          <div className="table-wrap"><table className="dt">
+            <thead><tr><th style={{width:32}}></th><th>Week</th><th style={{textAlign:'right'}}>Wages</th><th style={{textAlign:'right'}}>Other</th><th style={{textAlign:'right'}}>Total</th><th>Submitted</th></tr></thead>
+            <tbody>
+              {[...pendingPayroll].sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1).map(p=>{
+                const ws=toDateStr(p.weekStart);
+                const isExp=expandedReq===ws;
+                const pOther=otherExpenses.filter(e=>toDateStr(e.weekStart)===ws).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+                return <React.Fragment key={ws}>
+                  <tr>
+                    <td style={{padding:'4px 6px',textAlign:'center'}}><button className="btn btn-ghost btn-xs" style={{padding:'2px 5px'}} onClick={()=>setExpandedReq(isExp?null:ws)}>{isExp?'▲':'▼'}</button></td>
+                    <td style={{whiteSpace:'nowrap'}}>{fmtDate(ws)}<div style={{fontSize:10,color:'var(--gray-500)'}}>{ws} → {getWeekDates(ws)[6]}</div></td>
+                    <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
+                    <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
+                    <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(parseFloat(p.totalWages||0)+pOther)}</td>
+                    <td style={{fontSize:12,color:'var(--gray-600)'}}>{p.submittedAt?fmtDate(p.submittedAt):'—'}</td>
+                  </tr>
+                  {isExp&&<PayrollDetail pr={p} colSpan={6}/>}
+                </React.Fragment>;
+              })}
+            </tbody>
+          </table></div>}
         </div>
       </div>
     </div>}
 
     {tab==='payments'&&<div>
-      <div className="summary-grid">
-        <div className="summary-card" style={{background:'var(--green-dark)'}}>
-          <div className="label" style={{color:'rgba(255,255,255,.6)'}}>Total Paid</div>
-          <div className="value" style={{color:'var(--gold-light)',fontSize:20}}>{paidPayroll.length} weeks</div>
-          <div className="sub" style={{color:'rgba(255,255,255,.4)'}}>{fmt(paidPayroll.reduce((s,p)=>s+parseFloat(p.totalWages||0),0))} wages</div>
-        </div>
-      </div>
       <div className="card">
-        <div className="card-header"><div className="card-title">✅ Completed Payments</div></div>
+        <div className="card-header">
+          <div className="card-title">✅ Completed Payments</div>
+          <span className="badge badge-green">{paidPayroll.length} paid</span>
+        </div>
         <div className="card-body" style={{padding:0}}>
-          <PayrollTable rows={[...paidPayroll].sort((a,b)=>b.weekStart>a.weekStart?1:-1)} showPaidDate={true}/>
+          {paidPayroll.length===0?<div className="empty">No completed payments yet</div>:
+          <div className="table-wrap"><table className="dt">
+            <thead><tr><th style={{width:32}}></th><th>Week</th><th style={{textAlign:'right'}}>Wages</th><th style={{textAlign:'right'}}>Other</th><th style={{textAlign:'right'}}>Total</th><th>Paid On</th></tr></thead>
+            <tbody>
+              {[...paidPayroll].sort((a,b)=>toDateStr(b.weekStart)>toDateStr(a.weekStart)?1:-1).map(p=>{
+                const ws=toDateStr(p.weekStart);
+                const isExp=expandedPay===ws;
+                const pOther=otherExpenses.filter(e=>toDateStr(e.weekStart)===ws).reduce((s,e)=>s+parseFloat(e.amount||0),0);
+                return <React.Fragment key={ws}>
+                  <tr>
+                    <td style={{padding:'4px 6px',textAlign:'center'}}><button className="btn btn-ghost btn-xs" style={{padding:'2px 5px'}} onClick={()=>setExpandedPay(isExp?null:ws)}>{isExp?'▲':'▼'}</button></td>
+                    <td style={{whiteSpace:'nowrap'}}>{fmtDate(ws)}<div style={{fontSize:10,color:'var(--gray-500)'}}>{ws} → {getWeekDates(ws)[6]}</div></td>
+                    <td style={{textAlign:'right'}}>{fmt(p.totalWages)}</td>
+                    <td style={{textAlign:'right'}}>{fmt(pOther)}</td>
+                    <td style={{textAlign:'right',fontWeight:700,color:'var(--green-dark)'}}>{fmt(parseFloat(p.totalWages||0)+pOther)}</td>
+                    <td style={{fontSize:12,color:'var(--gray-600)'}}>{fmtDate(p.paidAt)}</td>
+                  </tr>
+                  {isExp&&<PayrollDetail pr={p} colSpan={6}/>}
+                </React.Fragment>;
+              })}
+            </tbody>
+          </table></div>}
         </div>
       </div>
     </div>}
@@ -1471,7 +1233,7 @@ function ReportsTab({data}) {
         <div style={{fontWeight:600,fontSize:14,color:'var(--green-dark)'}}>Monthly P&L</div>
         <input type="month" className="form-input" style={{width:'auto'}} value={selMonth} onChange={e=>setSelMonth(e.target.value)}/>
       </div>
-      <PnLCard {...monthlyPnL}/>
+      <PnLTable {...monthlyPnL}/>
       <div className="card mt-12">
         <div className="card-header"><div className="card-title">Income Breakdown</div></div>
         <div className="card-body" style={{padding:0}}>
@@ -1508,7 +1270,7 @@ function ReportsTab({data}) {
           {Array.from({length:5},(_,i)=>{const y=new Date().getFullYear()-2+i;return<option key={y} value={y}>FY {y}–{(y+1).toString().slice(2)}</option>;})}
         </select>
       </div>
-      <PnLCard {...annualPnL}/>
+      <PnLTable {...annualPnL}/>
       <div className="card mt-12">
         <div className="card-header"><div className="card-title">Income by Category</div></div>
         <div className="card-body" style={{padding:0}}>
@@ -1523,7 +1285,6 @@ function ReportsTab({data}) {
     </div>}
   </div>;
 }
-
 // ── Main App ──────────────────────────────────────────────
 const NAV = [
   {id:'expenses',label:'Expenses',icon:'💰',section:'main'},
@@ -1531,7 +1292,6 @@ const NAV = [
   {id:'reports',label:'Reports',icon:'📊',section:'main'},
   {id:'admin',label:'Admin',icon:'⚙️',section:'admin',adminOnly:true},
 ];
-
 function App() {
   const [user,setUser] = useState(null);
   const [authCreds,setAuthCreds] = useState(null);
@@ -1539,8 +1299,6 @@ function App() {
   const [data,setData] = useState({employees:[],config:{},workTypes:[],expenseTypes:[],payroll:[],otherExpenses:[],income:[],users:[]});
   const [page,setPage] = useState('expenses');
   const [loading,setLoading] = useState(false);
-
-  // Check saved login
   useEffect(()=>{
     const saved = localStorage.getItem(LS_AUTH);
     if(saved) {
@@ -1551,22 +1309,17 @@ function App() {
           setGasUrl(url);
           setLoading(true);
           apiGet(url,{action:'getAll',email,password}).then(r=>{
-            if(r&&!r.error) {
-              setData(r);
-              setUser(r.currentUser);
-              setAuthCreds({email,password});
-            } else { localStorage.removeItem(LS_AUTH); }
+            if(r&&!r.error) { setData(r); setUser(r.currentUser); setAuthCreds({email,password}); }
+            else { localStorage.removeItem(LS_AUTH); }
           }).catch(()=>{ localStorage.removeItem(LS_AUTH); }).finally(()=>setLoading(false));
         }
       } catch{}
     }
   },[]);
-
   const handleLogin = (u,email,password,url) => {
     setUser(u); setAuthCreds({email,password}); setGasUrl(url);
     refresh(url,email,password);
   };
-
   const refresh = useCallback(async(url,email,password)=>{
     const u = url||gasUrl; const e = email||(authCreds?.email); const p = password||(authCreds?.password);
     if(!u||!e||!p) return;
@@ -1576,41 +1329,33 @@ function App() {
       else if(r?.error) console.error('Sync error:',r.error);
     } catch(err){ console.error('Sync failed:',err.message); }
   },[gasUrl,authCreds]);
-
   const logout = () => { localStorage.removeItem(LS_AUTH); setUser(null); setAuthCreds(null); setData({employees:[],config:{},workTypes:[],expenseTypes:[],payroll:[],otherExpenses:[],income:[],users:[]}); };
-
   if(loading) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#1a3d12,#2d5a27)',flexDirection:'column',gap:16}}>
     <div style={{fontSize:48}}>🌿</div>
     <Spinner/>
     <div style={{color:'rgba(255,255,255,.6)',fontSize:13}}>Loading farm data…</div>
   </div>;
-
   if(!user) return <LoginScreen gasUrl={gasUrl} onLogin={handleLogin}/>;
-
   const isAdmin = user.isAdmin===true||String(user.isAdmin).toUpperCase()==='TRUE';
   const visibleNav = NAV.filter(n=>!n.adminOnly||isAdmin);
-
   const pageHeaders = {
     expenses:{title:'Expenses',sub:'Wages, other expenses & payment requests'},
     income:{title:'Income',sub:'Record farm income by category'},
     reports:{title:'Reports',sub:'Financial summaries and P&L'},
     admin:{title:'Administration',sub:'Employees, users and configuration'},
   };
-
   const PageComponent = {
     expenses:<ExpensesTab data={data} gasUrl={gasUrl} auth={authCreds} onRefresh={()=>refresh()}/>,
     income:<IncomeTab data={data} gasUrl={gasUrl} auth={authCreds} onRefresh={()=>refresh()}/>,
     reports:<ReportsTab data={data}/>,
     admin:isAdmin?<AdminTab data={data} gasUrl={gasUrl} auth={authCreds} onRefresh={()=>refresh()}/>:null,
   }[page];
-
   return <div className="app">
-    {/* Sidebar */}
     <aside className="sidebar">
       <div className="sidebar-logo">
         <h1>🌿 Pebble's Beach</h1>
         <p>Estate Management</p>
-        <p style={{fontSize:'9px',color:'#f5c842',marginTop:'2px',letterSpacing:'.5px',fontWeight:600}}>{`v${String(data?.gasVersion||'?').padStart(2,'0')}.10`}</p>
+        <p style={{fontSize:'9px',color:'#f5c842',marginTop:'2px',letterSpacing:'.5px',fontWeight:600}}>v${String(data?.gasVersion||'?').padStart(2,'0')}.11</p>
       </div>
       <div className="sidebar-user">
         <div className="sidebar-user-icon">{user.name?user.name[0].toUpperCase():'U'}</div>
@@ -1628,8 +1373,6 @@ function App() {
         <button className="btn btn-ghost btn-sm" style={{width:'100%',justifyContent:'center',color:'rgba(255,255,255,.5)',borderColor:'rgba(255,255,255,.2)'}} onClick={logout}>↩ Sign Out</button>
       </div>
     </aside>
-
-    {/* Main content */}
     <main className="main">
       <div className="main-header">
         <div>
@@ -1637,18 +1380,15 @@ function App() {
           <p>{pageHeaders[page]?.sub}</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:"10px",color:"#f5c842",letterSpacing:".5px",fontWeight:600}}>{`v${String(data?.gasVersion||'?').padStart(2,'0')}.10`}</span>
+          <span style={{fontSize:"10px",color:"#f5c842",letterSpacing:".5px",fontWeight:600}}>v${String(data?.gasVersion||'?').padStart(2,'0')}.11</span>
           <button className="btn btn-ghost btn-sm" onClick={()=>refresh(gasUrl,authCreds?.email,authCreds?.password)} title="Refresh data">↻ Sync</button>
         </div>
       </div>
       <div className="main-content">{PageComponent}</div>
     </main>
-
-
   </div>;
 }
-
 ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 </script>
 </body>
-</html>
+  </html>
