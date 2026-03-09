@@ -361,7 +361,7 @@ function LoginScreen({gasUrl,onLogin}) {
       <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px'}} onClick={doLogin} disabled={busy}>
         {busy ? <><Spinner/> Signing in…</> : 'Sign In'}
       </button>
-      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>v04.05</p>
+      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>app v10</p>
     </div>
   </div>;
 }
@@ -371,7 +371,7 @@ function AdminTab({data,gasUrl,auth,onRefresh}) {
   const [tab,setTab] = useState('employees');
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
-  const N = (t,tp='success') => { setMsg({t,tp}); setTimeout(()=>setMsg(null),3500); };
+  const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
 
   const call = useCallback(async(action,payload={},extra={}) => {
     setBusy(true);
@@ -606,7 +606,7 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   const [msg,setMsg] = useState(null);
   const [confirmDel,setConfirmDel] = useState(null);
   const [expandedWage,setExpandedWage] = useState(null);
-  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),5000);};
+  const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
 
   const weekDates = useMemo(()=>getWeekDates(weekStart),[weekStart]);
 
@@ -1008,7 +1008,7 @@ function OtherExpensesTab({data,gasUrl,auth,onRefresh}) {
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
   const [confirm,setConfirm] = useState(null);
-  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),3500);};
+  const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
   const expenseTypes = data.expenseTypes||[];
   const expenses = data.otherExpenses||[];
 
@@ -1102,7 +1102,7 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
   const [msg,setMsg] = useState(null);
   const [confirm,setConfirm] = useState(null);
   const [expandedPR,setExpandedPR] = useState(null);
-  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),4000);};
+  const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
 
   const submit = async(pr)=>{
     const ws=toDateStr(pr.weekStart);
@@ -1266,7 +1266,7 @@ function IncomeTab({data,gasUrl,auth,onRefresh}) {
   const [busy,setBusy] = useState(false);
   const [msg,setMsg] = useState(null);
   const [confirm,setConfirm] = useState(null);
-  const N=(t,tp='success')=>{setMsg({t,tp});setTimeout(()=>setMsg(null),3500);};
+  const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
   const incomes = data.income||[];
   const TYPES = ['Coffee','Pepper','Timber','Other'];
 
@@ -1610,7 +1610,7 @@ function App() {
       <div className="sidebar-logo">
         <h1>🌿 Pebble's Beach</h1>
         <p>Estate Management</p>
-        <p style={{fontSize:'9px',color:'#f5c842',marginTop:'2px',letterSpacing:'.5px',fontWeight:600}}>v04.05</p>
+        <p style={{fontSize:'9px',color:'#f5c842',marginTop:'2px',letterSpacing:'.5px',fontWeight:600}}>{`v${String(data?.gasVersion||'?').padStart(2,'0')}.10`}</p>
       </div>
       <div className="sidebar-user">
         <div className="sidebar-user-icon">{user.name?user.name[0].toUpperCase():'U'}</div>
@@ -1637,7 +1637,7 @@ function App() {
           <p>{pageHeaders[page]?.sub}</p>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <span style={{fontSize:"10px",color:"#f5c842",letterSpacing:".5px",fontWeight:600}}>v04.05</span>
+          <span style={{fontSize:"10px",color:"#f5c842",letterSpacing:".5px",fontWeight:600}}>{`v${String(data?.gasVersion||'?').padStart(2,'0')}.10`}</span>
           <button className="btn btn-ghost btn-sm" onClick={()=>refresh(gasUrl,authCreds?.email,authCreds?.password)} title="Refresh data">↻ Sync</button>
         </div>
       </div>
