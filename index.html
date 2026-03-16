@@ -303,7 +303,7 @@ function LoginScreen({gasUrl,onLogin}) {
       <button className="btn btn-primary" style={{width:'100%',justifyContent:'center',padding:'11px'}} onClick={doLogin} disabled={busy}>
         {busy ? <><Spinner/> Signing in…</> : 'Sign In'}
       </button>
-      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>app v11</p>
+      <p style={{textAlign:'center',marginTop:'14px',fontSize:'11px',color:'#f5c842',letterSpacing:'.5px',fontWeight:600}}>app v14</p>
     </div>
   </div>;
 }
@@ -532,6 +532,8 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
   const [confirmDel,setConfirmDel] = useState(null);
   const [expandedWage,setExpandedWage] = useState(null);
   const N=(t,tp='success')=>{setMsg({t,tp});if(tp==='success'||tp==='info'){setTimeout(()=>setMsg(null),4000);}};
+  const [contractMaleRate,setContractMaleRate] = useState(()=>config.contractMaleWage||'');
+  const [contractFemaleRate,setContractFemaleRate] = useState(()=>config.contractFemaleWage||'');
   const weekDates = useMemo(()=>getWeekDates(weekStart),[weekStart]);
   const existingPayroll = useMemo(()=>(data.payroll||[]).find(p=>toDateStr(p.weekStart)===weekStart),[data.payroll,weekStart]);
   const isPending = existingPayroll?.status==='pending';
@@ -554,6 +556,9 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     if(ep?.data?.days && ep.data.days.length) {
       setEntries(normDays(ep.data.days));
       setEditing(false);
+      // Restore saved rates if present, otherwise use config defaults
+      setContractMaleRate(ep.data.contractMale?.rate||config.contractMaleWage||'');
+      setContractFemaleRate(ep.data.contractFemale?.rate||config.contractFemaleWage||'');
     } else {
       setEntries(weekDates.map(()=>({
         employees: Object.fromEntries(employees.map(e=>[String(e.id),{worked:false,otHours:'',workType:'',workSubType:''}])),
@@ -574,11 +579,13 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
     });
     const mDays=entries.reduce((s,d)=>s+parseFloat(d.contractMale||0),0);
     const fDays=entries.reduce((s,d)=>s+parseFloat(d.contractFemale||0),0);
-    const mAmt=mDays*parseFloat(config.contractMaleWage||0);
-    const fAmt=fDays*parseFloat(config.contractFemaleWage||0);
+    const mRate=parseFloat(contractMaleRate||config.contractMaleWage||0);
+    const fRate=parseFloat(contractFemaleRate||config.contractFemaleWage||0);
+    const mAmt=mDays*mRate;
+    const fAmt=fDays*fRate;
     const totalWages=Object.values(empTotals).reduce((s,e)=>s+e.amount,0)+mAmt+fAmt;
-    return {empTotals,contractMale:{days:mDays,amount:mAmt},contractFemale:{days:fDays,amount:fAmt},totalWages};
-  },[entries,employees,config]);
+    return {empTotals,contractMale:{days:mDays,amount:mAmt,rate:mRate},contractFemale:{days:fDays,amount:fAmt,rate:fRate},totalWages};
+  },[entries,employees,config,contractMaleRate,contractFemaleRate]);
   const validate = ()=>{
     for(let di=0;di<entries.length;di++){
       const day=entries[di];
@@ -676,7 +683,15 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
               </tr>
             ))}
             <tr className="contract-row">
-              <td className="emp-name" style={{paddingLeft:12}}>Contract Male<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractMaleWage)}/day · Estate</span></td>
+              <td className="emp-name" style={{paddingLeft:12}}>
+                Contract Male
+                <div style={{display:'flex',alignItems:'center',gap:4,marginTop:3}}>
+                  {isLocked
+                    ? <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(contractMaleRate)}/day</span>
+                    : <><span style={{fontSize:10,color:'var(--gray-500)'}}>₹</span><input className="num-input" type="number" min="0" style={{width:52}} value={contractMaleRate} onChange={e=>setContractMaleRate(e.target.value)} title="Rate per worker per day"/><span style={{fontSize:10,color:'var(--gray-500)'}}>/day</span></>
+                  }
+                </div>
+              </td>
               {entries.map((day,di)=><td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
                 <div className="day-cell">
                   <input className="num-input" type="number" min="0" placeholder="# workers" disabled={isLocked} value={day.contractMale||''} onChange={e=>setDayField(di,'contractMale',e.target.value)} style={{width:'100%'}}/>
@@ -691,7 +706,15 @@ function WagesTab({data,gasUrl,auth,onRefresh}) {
               <td className="total-cell">{fmt(totals.contractMale.amount)}</td>
             </tr>
             <tr className="contract-row">
-              <td className="emp-name" style={{paddingLeft:12}}>Contract Female<br/><span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(config.contractFemaleWage)}/day · Estate</span></td>
+              <td className="emp-name" style={{paddingLeft:12}}>
+                Contract Female
+                <div style={{display:'flex',alignItems:'center',gap:4,marginTop:3}}>
+                  {isLocked
+                    ? <span style={{fontSize:10,color:'var(--gray-500)'}}>{fmt(contractFemaleRate)}/day</span>
+                    : <><span style={{fontSize:10,color:'var(--gray-500)'}}>₹</span><input className="num-input" type="number" min="0" style={{width:52}} value={contractFemaleRate} onChange={e=>setContractFemaleRate(e.target.value)} title="Rate per worker per day"/><span style={{fontSize:10,color:'var(--gray-500)'}}>/day</span></>
+                  }
+                </div>
+              </td>
               {entries.map((day,di)=><td key={di} style={{verticalAlign:'top',padding:'4px 3px'}}>
                 <div className="day-cell">
                   <input className="num-input" type="number" min="0" placeholder="# workers" disabled={isLocked} value={day.contractFemale||''} onChange={e=>setDayField(di,'contractFemale',e.target.value)} style={{width:'100%'}}/>
@@ -889,6 +912,15 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
     }catch(e){N('Submit failed: '+e.message,"error");}
     setBusy(null);
   };
+  const testEmail = async(ws)=>{
+    setBusy('test:'+ws);
+    try {
+      const r=await apiGet(gasUrl,{action:"testEmail",...auth,weekStart:ws,to:auth.email});
+      if(r.ok){N(`Test email sent to ${r.sentTo}`);}
+      else throw new Error(r.error||'Failed');
+    }catch(e){N('Test email failed: '+e.message,"error");}
+    setBusy(null);
+  };
   const del = async(ws)=>{
     setBusy(ws);
     try {
@@ -946,9 +978,13 @@ function PaymentRequestTab({data,gasUrl,auth,onRefresh}) {
                     <td style={{textAlign:"right",whiteSpace:"nowrap"}}>
                       {status==="draft"&&<>
                         <button className="btn btn-primary btn-xs" onClick={()=>submit(pr)} disabled={!!busy}>{isSubmitting?<Spinner/>:"Submit"}</button>
+                        {" "}{auth.email==='jawadayaz@gmail.com'&&<button className="btn btn-ghost btn-xs" onClick={()=>testEmail(ws)} disabled={!!busy} title="Send test email to yourself">{busy==='test:'+ws?<Spinner/>:"✉ Test"}</button>}
                         {" "}<button className="btn btn-danger btn-xs" onClick={()=>setConfirm(ws)} disabled={!!busy}>Del</button>
                       </>}
-                      {status==="pending"&&<span style={{fontSize:11,color:"var(--gray-500)"}}>Awaiting payment</span>}
+                      {status==="pending"&&<>
+                        <span style={{fontSize:11,color:"var(--gray-500)"}}>Awaiting payment</span>
+                        {" "}{auth.email==='jawadayaz@gmail.com'&&<button className="btn btn-ghost btn-xs" onClick={()=>testEmail(ws)} disabled={!!busy} title="Send test email to yourself">{busy==='test:'+ws?<Spinner/>:"✉ Test"}</button>}
+                      </>}
                       {status==="paid"&&<span style={{fontSize:11,color:"var(--gray-500)"}}>Closed</span>}
                     </td>
                   </tr>
